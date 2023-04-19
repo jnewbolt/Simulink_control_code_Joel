@@ -1,35 +1,36 @@
 %% Parameter sweep
 
-cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code')
+% cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code')
 
 if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_loaded','var')
     error('Run "setup_DAQ_simulink" to establish experimental setup. Vars "experiment", "bias_unloaded", "bias_loaded" must be established.')
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230414';
+date_start = '20230418';
 
 % Save folder location
-% FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemFriday_4c_separation_3alphaSweep_APHPH_A3E\']);
-% mkdir(FOLDERNAME);
+FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
+mkdir(FOLDERNAME);
 
 %% Sweep parameters
 
 % non-changing parameters
 U = 0.33;
 phi = -90;
-num_cyc = 30;
+num_cyc = 20;
 transient_cycs = 3;
-fred = 0.12;
+fred = 0.11;
 freq = fred*U/foil.chord;
-freq = 0.65; % very close ~0.649
+% freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = [40,50,70];
-H1star = 0.8;
+P1star_vec = [50,60,80];
+H1star = 1.2;
 P2star_vec = 70; % 65,75
-% H2star_vec = [0.4,0.6,0.8,1.0,1.2];
-H2star_vec = [1.4,1.6,1.8,2.0,2.2];
+H2star_vec = [0.6,0.8,1.0,1.2,1.4,1.6];
+% H2star_vec = [0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2];
+% H2star_vec = [1.4,1.6,1.8,2.0,2.2];
 
 phase_vec = [-180,-120,-60,0,60,120,180];
 
@@ -127,18 +128,18 @@ for P1star = P1star_vec
                 %% Save data
 
                 motor_warning_flag = 0;
-                FILENAME = ([date_start,'_TandemThursday_4c_separation_3alphaSweep_',...
-                    'aT4=',num2str(aT4),'_p2=',num2str(pitch1),'deg_h2=',num2str(heave2),'c_ph=',num2str(phase),'deg.mat']);
+                FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+                    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                 save(fullfile(FOLDERNAME,FILENAME));
 
                 %% Check for misalignment
                 
-                if abs(mean(out(:,18))) > 0.1 % if average value of symmetric signal is more than 0.5 deg
+                if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg
                     warning('Gromit pitch motor (Hudson) jerked. Foil will be realigned and trial will be repeated');
                     motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected
-                    FILENAME = ([date_start,'_TandemThursday_4c_separation_3alphaSweep_',...
-                        'aT4=',num2str(aT4),'_p2=',num2str(pitch1),'deg_h2=',num2str(heave2),'c_ph=',num2str(phase),'deg.mat']);
+                    FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+                        'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                     % realign gromit
                     traverse = 'g';
@@ -150,5 +151,8 @@ for P1star = P1star_vec
         end
     end
 end
+
+message = ['The experiment finished at ',string(datetime),'. Come and check it out!'];
+sendmail('eric_handy-cardenas@brown.edu','Experiment done',message);
 
 disp('End of experiment')

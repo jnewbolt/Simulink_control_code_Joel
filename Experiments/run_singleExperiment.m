@@ -6,7 +6,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
     error('Run "setup_DAQ_simulink" to establish experimental setup. Vars "experiment", "bias_unloaded", "bias_loaded" must be established.')
 end
 
-FOLDERNAME = ('R:ENG_Breuer_Shared\ehandyca\DATA_main_repo\20230418_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E\');
+FOLDERNAME = ('R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\20230418_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E');
 mkdir(FOLDERNAME);
 
 %% Take experiment bias measurement
@@ -24,7 +24,7 @@ bias_trial.Gromit = bias_newloaded.Gromit - bias_loaded.Gromit + bias_unloaded.G
 % non-changing parameters
 U = 0.33;
 phi = -90;
-num_cyc = 40;
+num_cyc = 20;
 transient_cycs = 3;
 fred = 0.11;
 freq = fred*U/foil.chord;
@@ -33,8 +33,8 @@ freq = fred*U/foil.chord;
 % non-dim parameters
 P1star = 0; % pitch amp leading [deg]
 H1star = 0; % heave amp leading [chords]
-P2star = 0; % pitch amp leading [deg]
-H2star = 0; % heave amp leading [chords]
+P2star = 70; % pitch amp leading [deg]
+H2star = 1.2; % heave amp leading [chords]
 
 % dimensional parameters
 pitch1 = P1star;
@@ -108,8 +108,8 @@ out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vect
 
 %% Save data
 
-FILENAME = (['20230418_singleFoil_noAmpTest_',...
-    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch1,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+FILENAME = (['\20230418_singleFoil_noAmpTest1_TrailingEffectOnFront_',...
+    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
 save(fullfile(FOLDERNAME,FILENAME));
 

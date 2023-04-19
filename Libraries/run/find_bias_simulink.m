@@ -29,7 +29,7 @@
     [~, ramp_p2, ramp_h2] = ramp_fn(ramp_time, experiment.T, bias, offset_home, 'w');
     
     % Zero motion profile
-    prof_time = 10; % length of time of bias measurement
+    prof_time = 20; % length of time of bias measurement
     phprof12 = zeros(prof_time/experiment.T,1);
     
     clear profs % in case this scripts is run after a previous one
@@ -75,15 +75,29 @@
     disp('Running traverse...')
     pause(sim_time);
     disp('Acquiring data...')
+
     while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
             pause(5)
             disp('Loading...')
     end
+    
+%     sim_status = 'running';
+%     while ~strcmp(sim_status,'stopped')
+%         sim_status = get_param('simulink_traverse_control','SimulationStatus');
+%         pause(5);
+%         disp('Loading...')
+%     end
+% 
+%     if exist('raw_encoder_p1','var') && exist('raw_encoder_h1','var') && exist('raw_encoder_p2','var') && exist('raw_encoder_h2','var') && exist('raw_force_wallace','var') && exist('raw_force_gromit','var') && exist('ref_signal','var')
+%         disp('All data acquired')
+%     end
+
     disp('Done')
 
     %% Calculate force biases
     
     range_x = find(ref_signal);
+    range_x = range_x(1000:end);
 
     bias.Wallace = mean(raw_force_wallace(range_x,:),1);
     bias.WallaceStdev = std(raw_force_wallace(range_x,:),1);

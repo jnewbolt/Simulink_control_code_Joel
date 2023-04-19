@@ -1,6 +1,9 @@
 %% Setup DAQ - Simulink control
 
 addpath(genpath('Libraries'))
+setupEmail() % sets up email to send out when experiment is finished
+
+% cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code');
 
 %% General setup
 
@@ -59,6 +62,7 @@ end
 
 % Assign aligned pitch bias to unloaded bias variable
 disp('Updating "bias_unloaded" with alignment.')
+bias.pitch(2) = 0.7192; % temporary 20230418
 bias_unloaded = bias;
 clearvars -except experiment foil srate T out raw_encoders raw_wallace raw_gromit bias bias_unloaded
 
