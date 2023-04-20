@@ -158,7 +158,7 @@ for P1star = P1star_vec
     end
 end
 
-message = ['The experiment finished at ',string(datetime),'. Come and check it out!'];
-sendmail('joel_newbolt@brown.edu','Experiment done',message);
+% message = ['The experiment finished at ',string(datetime),'. Come and check it out!'];
+% sendmail('joel_newbolt@brown.edu','Experiment done',message);
 
 disp('End of experiment')
