@@ -1,7 +1,7 @@
 %% Setup DAQ - Simulink control
 
-addpath(genpath('Libraries'))
-setupEmail() % sets up email to send out when experiment is finished
+% addpath(genpath('Libraries'))
+% setupEmail() % sets up email to send out when experiment is finished
 
 % cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code');
 
