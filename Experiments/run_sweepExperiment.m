@@ -7,10 +7,12 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230418';
+date_start = '20230420';
 
 % Save folder location
-FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
+% FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
+FOLDERNAME = (['D:\Experiments\2foil',date_start]);
+
 mkdir(FOLDERNAME);
 
 %% Sweep parameters
@@ -128,7 +130,9 @@ for P1star = P1star_vec
                 %% Save data
 
                 motor_warning_flag = 0;
-                FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+%                 FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+%                     'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+                FILENAME = (['\',date_start,'_PrescribedMotion_',...
                     'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                 save(fullfile(FOLDERNAME,FILENAME));
@@ -138,8 +142,10 @@ for P1star = P1star_vec
                 if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg
                     warning('Gromit pitch motor (Hudson) jerked. Foil will be realigned and trial will be repeated');
                     motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected
-                    FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
-                        'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+%                     FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+%                         'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+                    FILENAME = (['\',date_start,'_PrescribedMotion_',...
+                    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                     % realign gromit
                     traverse = 'g';
@@ -153,6 +159,6 @@ for P1star = P1star_vec
 end
 
 message = ['The experiment finished at ',string(datetime),'. Come and check it out!'];
-sendmail('eric_handy-cardenas@brown.edu','Experiment done',message);
+sendmail('joel_newbolt@brown.edu','Experiment done',message);
 
 disp('End of experiment')
