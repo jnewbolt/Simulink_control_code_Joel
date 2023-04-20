@@ -11,7 +11,7 @@ date_start = '20230420';
 
 % Save folder location
 % FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
-FOLDERNAME = (['D:\Experiments\2foil',date_start]);
+FOLDERNAME = (['D:\Experiments\2foil\',date_start]);
 
 mkdir(FOLDERNAME);
 
@@ -27,14 +27,14 @@ freq = fred*U/foil.chord;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = [50,60,80];
+P1star_vec = [50]; %,60,80];
 H1star = 1.2;
-P2star_vec = 70; % 65,75
-H2star_vec = [0.6,0.8,1.0,1.2,1.4,1.6];
+P2star_vec = 50; %70; % 65,75
+H2star_vec = 0.6; %[0.6,0.8,1.0,1.2,1.4,1.6];
 % H2star_vec = [0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2];
 % H2star_vec = [1.4,1.6,1.8,2.0,2.2];
 
-phase_vec = [-180,-120,-60,0,60,120,180];
+phase_vec = 0; %[-180,-120,-60,0,60,120,180];
 
 %% Experimental loop
 
