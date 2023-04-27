@@ -27,7 +27,7 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = [20]; %,60,80];
+P1star_vec = 20; %,60,80];
 H1star = 1.2;
 P2star_vec = 0; %70; % 65,75
 H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];

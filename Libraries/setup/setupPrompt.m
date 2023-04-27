@@ -2,10 +2,10 @@ function experiment = setupPrompt(fs)
 
 % default answers
 
-experiment.chord = 0.061;
+experiment.chord = 0.0535;
 experiment.thcknss = 0.0238;
 experiment.span = 6*0.061;
-experiment.foil_shape = 'A3E';
+experiment.foil_shape = 'V1';
 experiment.Wall_distance_left = 0.4;
 experiment.Wall_distance_right = 0.4;
 experiment.flume_height = 0.55;
