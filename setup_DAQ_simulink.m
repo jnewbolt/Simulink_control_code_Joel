@@ -14,8 +14,10 @@ experiment = setupPrompt(srate);
 foil = foils_database(experiment.foil_shape);
 
 % expected time delay between Gromit and Wallace (Gromit leading motion)
-experiment.motion_delay = 35;
+experiment.motion_delay = 13;
 disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ',num2str(experiment.motion_delay),' ms']);
+
+clearvars -except experiment foil srate T
 
 %% Unloaded bias measurement
 
