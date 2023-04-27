@@ -7,7 +7,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230420';
+date_start = '20230427';
 
 % Save folder location
 % FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
@@ -18,23 +18,23 @@ mkdir(FOLDERNAME);
 %% Sweep parameters
 
 % non-changing parameters
-U = 0.33;
+U = 0.30;
 phi = -90;
-num_cyc = 20;
+num_cyc = 60;
 transient_cycs = 3;
-fred = 0.11;
-freq = fred*U/foil.chord;
+% fred = 0.11;
+% freq = fred*U/foil.chord;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = [50]; %,60,80];
+P1star_vec = [20]; %,60,80];
 H1star = 1.2;
-P2star_vec = 50; %70; % 65,75
-H2star_vec = 0.6; %[0.6,0.8,1.0,1.2,1.4,1.6];
+P2star_vec = 0; %70; % 65,75
+H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 % H2star_vec = [0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2];
 % H2star_vec = [1.4,1.6,1.8,2.0,2.2];
 
-phase_vec = 0; %[-180,-120,-60,0,60,120,180];
+phase_vec = (-180:20:180); %[-180,-120,-60,0,60,120,180];
 
 %% Experimental loop
 
@@ -57,14 +57,28 @@ for P1star = P1star_vec
                 %% Dimensional parameters
 
                 pitch1 = P1star;
-                heave1 = H1star*foil.chord;
+%                 heave1 = H1star*foil.chord;
+                heave1 = 0.043; % heave of upstream foil in meters
                 pitch2 = P2star;
                 heave2 = H2star*foil.chord;
                 
-                freq = fred*U/foil.chord;
-                freq = 0.65;
+%                 freq = fred*U/foil.chord;
+                freq = 0.7; % Frequency in cycles/sec
+                freq1 = freq;
+                freq2 = freq;
 
-                aT4 = atan(-2*pi*(heave1/foil.chord)*fred) + deg2rad(pitch1);
+%                 aT4 = atan(-2*pi*(heave1/foil.chord)*fred) + deg2rad(pitch1);
+
+                %% Check velocity and acceleration limits
+                heavevel_limit = 0.5; % Heave velocity limit in m/s
+                heaveacc_limit = 4.5; % Heave acceleration limit in m/s/s
+                heavevel1_max = heave1*2*pi*freq1;
+                heavevel2_max = heave2*2*pi*freq2;
+                heaveacc1_max = heave1*(2*pi*freq1)^2;
+                heaveacc2_max = heave2*(2*pi*freq2)^2;
+                if heavevel1_max > heavevel_limit || heavevel2_max > heavevel_limit || heaveacc1_max > heaveacc_limit || heaveacc2_max > heaveacc_limit
+                    break
+                end
 
                 %% Profile generation
                 
@@ -126,15 +140,15 @@ for P1star = P1star_vec
                 
                 range_x = find(ref_signal);
                 raw_encoders = [raw_encoder_p1, raw_encoder_h1, raw_encoder_p2, raw_encoder_h2];
-                out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, ref_signal, bias_trial, range_x, experiment.offset_home);
+                out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias_trial, range_x, experiment.offset_home);
                 
                 %% Save data
 
                 motor_warning_flag = 0;
 %                 FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
 %                     'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
-                FILENAME = (['\',date_start,'_PrescribedMotion_',...
-                    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+                FILENAME = (['\',date_start,'_PrescribedMotion',...
+                    '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                 save(fullfile(FOLDERNAME,FILENAME));
 
@@ -145,8 +159,8 @@ for P1star = P1star_vec
                     motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected
 %                     FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
 %                         'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
-                    FILENAME = (['\',date_start,'_PrescribedMotion_',...
-                    'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+                    FILENAME = (['\',date_start,'_PrescribedMotion',...
+                    '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                     % realign gromit
                     traverse = 'g';
@@ -159,7 +173,7 @@ for P1star = P1star_vec
     end
 end
 
-% message = ['The experiment finished at ',string(datetime),'. Come and check it out!'];
-% sendmail('joel_newbolt@brown.edu','Experiment done',message);
+message = strjoin(['The experiment finished at ',string(datetime),'. Come and check it out!']);
+sendmail('joel_newbolt@brown.edu','Experiment done',message);
 
 disp('End of experiment')

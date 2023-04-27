@@ -71,7 +71,7 @@ while repeat_alignment == 1
         %% Convert data
     
         raw_encoders = [raw_encoder_p1, raw_encoder_h1, raw_encoder_p2, raw_encoder_h2];
-        out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, ref_signal, bias, [], offset_home);
+        out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias, [], offset_home);
     
         %% Extract relevant forces for analysis
     

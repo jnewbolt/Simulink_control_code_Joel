@@ -105,10 +105,13 @@
     bias.Gromit = mean(raw_force_gromit(range_x,:),1);
     bias.GromitStdev = std(raw_force_gromit(range_x,:),1);
 
+    bias.accmeter = mean(raw_accelmeter(range_x,:),1);
+    bias.accmeterStdev = std(raw_accelmeter(range_x,:),1);
+
     %% Convert output
 
     raw_encoders = [raw_encoder_p1, raw_encoder_h1, raw_encoder_p2, raw_encoder_h2];
-    out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, ref_signal, bias, range_x, offset_home);
+    out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias, range_x, offset_home);
 
     %% Plot results
 
@@ -135,6 +138,11 @@
     legend('Fy','Fx','Fz','Ty','Tx','Tz')
     
     %% Raise warnings for potentially faulty measurements
+
+    if bias.accmeter < 1.5 || bias.accmeter > 1.8
+        disp(bias.accmeter)
+        disp('Warning: Accelerometer voltage outside expected range. Try power cycling.')
+    end
 
     bias.RMSEW = sqrt(mean((raw_force_wallace - repmat(bias.Wallace,numel(raw_force_wallace(:,1)),1)).^2));
     if sum(bias.RMSEW>[.15 .15 .3 .1 .1 .1])>0 

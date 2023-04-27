@@ -1,4 +1,4 @@
-function out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, ref_signal, bias, range_x, offset_home)
+function out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias, range_x, offset_home)
 
 % % Required inputs:
 % raw_encoders
@@ -47,6 +47,10 @@ out(:,17:22) = conv_output_gromit_force(raw_force_gromit(range_x,:),bias.Gromit)
 %% Vectrino
 
 out(:,13:16) = (raw_vectrino(range_x,:)-2.5)*2/5;
+
+%% Accelerometer
+
+out(:,23) = (0.6+0.306)*9.81*(raw_accelmeter(range_x,:)-bias.accmeter); % Mass of mount + mass of vibrissa*(m/s/s/Volt)*accmeter_voltage
 
 end
 
