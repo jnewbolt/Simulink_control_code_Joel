@@ -84,7 +84,7 @@ experiment.filt_var = str2double(answer{18});
 
 % establish save folder
 if answer{20} == 'y'
-    experiment.fname = ['R:\ENG_Breuer_Shared\group\Eric\main_flume_experimental_data\',answer{19}];
+    experiment.fname = ['R:\ENG_Breuer_Shared\group\Joel\main_flume_experimental_data\',answer{19}];
 else
     experiment.fname = ['D:\Experiments\',num2str(experiment.Number_of_foils),'foil\',answer{19}];
 end

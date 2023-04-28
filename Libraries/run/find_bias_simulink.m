@@ -48,7 +48,7 @@
     % and should go back to 0 some time BEFORE the 0 profile ends.
 
     % plot trajectories
-    plot_profiles(profs);
+%     plot_profiles(profs);
     
     % convert into time series to be output to simulink
     toime = (0:size(profs,1)-1)'/experiment.srate; % time vector to create time series objects
@@ -113,30 +113,30 @@
     raw_encoders = [raw_encoder_p1, raw_encoder_h1, raw_encoder_p2, raw_encoder_h2];
     out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias, range_x, offset_home);
 
-    %% Plot results
-
-    figure()
-    force_resolution = [1/32 1/32 1/16];
-    torque_resolution = 1/528;
-
-    subplot(2,1,2)
-    plot(out(20:end-20,7:9)./force_resolution,'.')
-    hold on 
-    plot(out(20:end-20,10:12)/torque_resolution,'.')
-    hold off
-    title('Wallace (last)')
-    ylabel('Forces and Torques (normalized by resolution)')
-    legend('Fy','Fx','Fz','Ty','Tx','Tz')
-
-    subplot(2,1,1)
-    plot(out(20:end-20,17:19)./force_resolution,'.')
-    hold on 
-    plot(out(20:end-20,20:22)/torque_resolution,'.')
-    hold off
-    title('Gromit (middle)')
-    ylabel('Forces and Torques (normalized by resolution)')
-    legend('Fy','Fx','Fz','Ty','Tx','Tz')
-    
+%     %% Plot results
+% 
+%     figure()
+%     force_resolution = [1/32 1/32 1/16];
+%     torque_resolution = 1/528;
+% 
+%     subplot(2,1,2)
+%     plot(out(20:end-20,7:9)./force_resolution,'.')
+%     hold on 
+%     plot(out(20:end-20,10:12)/torque_resolution,'.')
+%     hold off
+%     title('Wallace (last)')
+%     ylabel('Forces and Torques (normalized by resolution)')
+%     legend('Fy','Fx','Fz','Ty','Tx','Tz')
+% 
+%     subplot(2,1,1)
+%     plot(out(20:end-20,17:19)./force_resolution,'.')
+%     hold on 
+%     plot(out(20:end-20,20:22)/torque_resolution,'.')
+%     hold off
+%     title('Gromit (middle)')
+%     ylabel('Forces and Torques (normalized by resolution)')
+%     legend('Fy','Fx','Fz','Ty','Tx','Tz')
+%     
     %% Raise warnings for potentially faulty measurements
 
     if bias.accmeter < 1.5 || bias.accmeter > 1.8

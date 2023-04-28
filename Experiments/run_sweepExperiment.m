@@ -11,7 +11,7 @@ date_start = '20230427';
 
 % Save folder location
 % FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
-FOLDERNAME = (['D:\Experiments\2foil\',date_start]);
+FOLDERNAME = ([experiment.fname,'\data']);
 
 mkdir(FOLDERNAME);
 
@@ -27,7 +27,7 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = 20; %,60,80];
+P1star_vec = 30; %,60,80];
 H1star = 1.2;
 P2star_vec = 0; %70; % 65,75
 H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
@@ -58,12 +58,12 @@ for P1star = P1star_vec
 
                 pitch1 = P1star;
 %                 heave1 = H1star*foil.chord;
-                heave1 = 0.043; % heave of upstream foil in meters
+                heave1 = 0.024; % heave of upstream foil in meters
                 pitch2 = P2star;
-                heave2 = H2star*foil.chord;
+                heave2 = H2star*0.0265; % manual value of cross-stream thickness D for vibrissa
                 
 %                 freq = fred*U/foil.chord;
-                freq = 0.7; % Frequency in cycles/sec
+                freq = 1.81; % Frequency in cycles/sec
                 freq1 = freq;
                 freq2 = freq;
 
@@ -105,8 +105,8 @@ for P1star = P1star_vec
                 profs(:,4) = [ramp_h2; pprof4+experiment.offset_home(4)+bias_trial.heave(2); flip(ramp_h2); zeros(experiment.motion_delay,1); zeros(heaveW_delay,1)];
                 profs(:,5) = [zeros(heaveW_delay,1); zeros(experiment.motion_delay,1); zeros(size(ramp_p1)); rprof5; zeros(size(ramp_p1))]; % reference signal
                 
-                % plot trajectories
-                plot_profiles(profs);
+%                 % plot trajectories
+%                 plot_profiles(profs);
                 
                 % convert into time series to be output to simulink
                 toime = (0:size(profs,1)-1)'/experiment.srate; % time vector to create time series objects
@@ -154,20 +154,20 @@ for P1star = P1star_vec
 
                 %% Check for misalignment
                 
-                if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg
-                    warning('Gromit pitch motor (Hudson) jerked. Foil will be realigned and trial will be repeated');
-                    motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected
-%                     FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
-%                         'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
-                    FILENAME = (['\',date_start,'_PrescribedMotion',...
-                    '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
-
-                    % realign gromit
-                    traverse = 'g';
-                    run("find_zero_pitch_simulink.m")
-
-                end
-                close all
+%                 if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg
+%                     warning('Gromit pitch motor (Hudson) jerked. Foil will be realigned and trial will be repeated');
+%                     motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected
+% %                     FILENAME = ([date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
+% %                         'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+%                     FILENAME = (['\',date_start,'_PrescribedMotion',...
+%                     '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+% 
+%                     % realign gromit
+%                     traverse = 'g';
+%                     run("find_zero_pitch_simulink.m")
+% 
+%                 end
+%                 close all
             end
         end
     end
