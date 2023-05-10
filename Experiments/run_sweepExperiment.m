@@ -7,7 +7,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230427';
+date_start = '20230510';
 
 % Save folder location
 % FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
@@ -34,15 +34,16 @@ H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 % H2star_vec = [0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2];
 % H2star_vec = [1.4,1.6,1.8,2.0,2.2];
 
-phase_vec = (-180:20:180); %[-180,-120,-60,0,60,120,180];
-
+phase_step = 20; % phase change between trials
+phase_vec = (-180:phase_step:180);
 %% Experimental loop
 
 for P1star = P1star_vec
     for P2star = P2star_vec
         for H2star = H2star_vec
-            for phase = phase_vec
-
+            phase = -180; % initial value of phase difference in degrees
+            while phase <= max(phase_vec)
+                sim_fail = 0;
                 %% Take experiment bias measurement
                 
                 bias = bias_loaded; % use bias_loaded as the bias to update the pitch and heave biases in the "fin_bias_simulink" routine
@@ -58,12 +59,12 @@ for P1star = P1star_vec
 
                 pitch1 = P1star;
 %                 heave1 = H1star*foil.chord;
-                heave1 = 0.024; % heave of upstream foil in meters
+                heave1 = 0.024*2.0362; % heave of upstream foil in meters
                 pitch2 = P2star;
-                heave2 = H2star*0.0265; % manual value of cross-stream thickness D for vibrissa
+                heave2 = H2star*0.054; % manual value of cross-stream thickness D for vibrissa
                 
 %                 freq = fred*U/foil.chord;
-                freq = 1.81; % Frequency in cycles/sec
+                freq = 0.8889; % Frequency in cycles/sec
                 freq1 = freq;
                 freq2 = freq;
 
@@ -128,12 +129,23 @@ for P1star = P1star_vec
                 set_param('simulink_traverse_control','SimulationCommand','start');
                 
                 disp('Running traverse...')
+                tic % Keep track of runtime
                 pause(sim_time);
                 disp('Acquiring data...')
                 while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
                         pause(5)
                         disp('Loading...')
+                        runtime = toc; % current runtime in seconds
+                        if runtime > 5*sim_time % Break out if the trial is taking unexpectedly long to avoid hanging on failure to build model
+                            sim_fail = 1;
+                            break
+                        end
                 end
+
+                if sim_fail == 1 % skip the rest of the while loop if the model simulation failed
+                    continue
+                end
+                
                 disp('Done')
                                 
                 %% Data conversion
@@ -168,6 +180,7 @@ for P1star = P1star_vec
 % 
 %                 end
 %                 close all
+            phase = phase + phase_step;
             end
         end
     end
