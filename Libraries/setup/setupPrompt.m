@@ -4,14 +4,14 @@ function experiment = setupPrompt(fs)
 
 experiment.chord = 0.054;
 experiment.thcknss = 0.054;
-experiment.span = 6*0.061;
+experiment.span = 0.447;
 experiment.foil_shape = 'C1';
 experiment.Wall_distance_left = 0.4;
 experiment.Wall_distance_right = 0.4;
 experiment.flume_height = 0.55;
 experiment.flume_hertz = 16.4;
 experiment.Number_of_foils = 2;
-experiment.foil_separation = 6*0.061; 
+experiment.foil_separation = 0.242; 
 experiment.foil_offset = 0;
 experiment.offset_p1 = 0;
 experiment.offset_h1 = 0;

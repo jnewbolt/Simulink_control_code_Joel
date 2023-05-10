@@ -1,7 +1,9 @@
 %% Find bias - simulink control
 
 % function [out, bias] = find_bias_simulink(experiment, bias, motion_delay, offset_home)
-    
+sim_fail = 1; % Check if the model ran correctly
+while sim_fail == 1  
+    sim_fail = 0;
     % Find bias in the force measurements
     % NOTE: only overwrites the force biases unless bias is not specified
 
@@ -73,12 +75,21 @@
     set_param('simulink_traverse_control','SimulationCommand','start');
     
     disp('Running traverse...')
+    tic % Keep track of runtime
     pause(sim_time);
     disp('Acquiring data...')
-
     while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
             pause(5)
             disp('Loading...')
+            runtime = toc; % current runtime in seconds
+            if runtime > 5*sim_time % Break out if the trial is taking unexpectedly long to avoid hanging on failure to build model
+                sim_fail = 1;
+                break
+            end
+    end
+
+    if sim_fail == 1 % skip the rest of the while loop if the model simulation failed
+        continue
     end
     
 %     sim_status = 'running';
@@ -170,5 +181,5 @@
     
     save(filename,'bias','time','out');
 
-% end
+end
 
