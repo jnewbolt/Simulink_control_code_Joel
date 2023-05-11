@@ -20,7 +20,7 @@ mkdir(FOLDERNAME);
 % non-changing parameters
 U = 0.30;
 phi = -90;
-num_cyc = 60;
+num_cyc = 30;
 transient_cycs = 3;
 % fred = 0.11;
 % freq = fred*U/foil.chord;
@@ -43,7 +43,6 @@ for P1star = P1star_vec
         for H2star = H2star_vec
             phase = -180; % initial value of phase difference in degrees
             while phase <= max(phase_vec)
-                sim_fail = 0;
                 %% Take experiment bias measurement
                 
                 bias = bias_loaded; % use bias_loaded as the bias to update the pitch and heave biases in the "fin_bias_simulink" routine
@@ -122,28 +121,26 @@ for P1star = P1star_vec
                 disp(['Expected simulation time: ', num2str(sim_time), ' seconds']);
                 
                 %% Run actual experiment
-                
-                % clear variables before next experiment
-                clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
-
-                set_param('simulink_traverse_control','SimulationCommand','start');
-                
-                disp('Running traverse...')
-                tic % Keep track of runtime
-                pause(sim_time);
-                disp('Acquiring data...')
-                while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
-                        pause(5)
-                        disp('Loading...')
-                        runtime = toc; % current runtime in seconds
-                        if runtime > 5*sim_time % Break out if the trial is taking unexpectedly long to avoid hanging on failure to build model
-                            sim_fail = 1;
-                            break
-                        end
-                end
-
-                if sim_fail == 1 % skip the rest of the while loop if the model simulation failed
-                    continue
+                simStatus = 'stopped';
+                while strcmp(simStatus,'stopped')
+                    % clear variables before next experiment
+                    clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
+    
+                    set_param('simulink_traverse_control','SimulationCommand','start');
+                    simStatus = get_param('simulink_traverse_control','SimulationStatus');
+                    disp('Running traverse...')
+                    pause(sim_time);
+                    disp('Acquiring data...')
+                    while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
+                            simStatus = get_param('simulink_traverse_control','SimulationStatus');
+                            pause(5)
+                            disp('Loading...')
+                            if strcmp(simStatus,'stopped') % Break out if the trial is taking unexpectedly long to avoid hanging on failure to build model
+                                delete('SimulationCache\simulink_traverse_control.slxc')
+                                disp('Model failed to run.  Deleting cache (.slxc) and trying again.')
+                                break
+                            end
+                    end
                 end
                 
                 disp('Done')
