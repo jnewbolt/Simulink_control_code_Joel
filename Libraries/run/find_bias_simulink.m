@@ -74,8 +74,8 @@ while strcmp(simStatus,'stopped')
     set_param('simulink_traverse_control','SimulationCommand','start');
     simStatus = get_param('simulink_traverse_control','SimulationStatus');
     disp('Running traverse...')
-    pause(sim_time);
-    disp('Acquiring data...')
+    pause(sim_time+5);
+%     disp('Acquiring data...')
     while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
             simStatus = get_param('simulink_traverse_control','SimulationStatus');
             pause(5)

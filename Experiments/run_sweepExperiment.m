@@ -7,7 +7,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230510';
+date_start = '20230511';
 
 % Save folder location
 % FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
@@ -36,6 +36,9 @@ H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
 phase_step = 20; % phase change between trials
 phase_vec = (-180:phase_step:180);
+
+num_trials = size(phase_vec,2)*size(H2star_vec,2);
+trial_number = 1;
 %% Experimental loop
 
 for P1star = P1star_vec
@@ -125,12 +128,13 @@ for P1star = P1star_vec
                 while strcmp(simStatus,'stopped')
                     % clear variables before next experiment
                     clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
-    
+                    
+                    disp(['Beginning trial ',num2str(trial_number),' of ',num2str(num_trials)])
                     set_param('simulink_traverse_control','SimulationCommand','start');
                     simStatus = get_param('simulink_traverse_control','SimulationStatus');
                     disp('Running traverse...')
-                    pause(sim_time);
-                    disp('Acquiring data...')
+                    pause(sim_time+5);
+%                     disp('Acquiring data...')
                     while ~exist('raw_encoder_p1','var') || ~exist('raw_encoder_h1','var') || ~exist('raw_encoder_p2','var') || ~exist('raw_encoder_h2','var') || ~exist('raw_force_wallace','var') || ~exist('raw_force_gromit','var') || ~exist('ref_signal','var')
                             simStatus = get_param('simulink_traverse_control','SimulationStatus');
                             pause(5)
@@ -178,6 +182,7 @@ for P1star = P1star_vec
 %                 end
 %                 close all
             phase = phase + phase_step;
+            trial_number = trial_number+1;
             end
         end
     end
