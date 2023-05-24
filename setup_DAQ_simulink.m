@@ -1,9 +1,11 @@
 %% Setup DAQ - Simulink control
+% Run this code before running the experiment in order to:
+% -Define user parameters
+% -Take tare measurement for force sensors
+% -Find zero y-Force angles, aka find zero pitch
+% -Take loaded tare measurement (with steady flow on object)
 
-% addpath(genpath('Libraries'))
 setupEmail() % sets up email to send out when experiment is finished
-
-% cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code');
 
 %% General setup
 
