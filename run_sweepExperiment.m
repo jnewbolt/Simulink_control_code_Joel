@@ -1,18 +1,17 @@
 %% Parameter sweep
+% Run this script after "setup_DAQ_simulink.m" in order to run an experiment with trials that change the
+% flapping parameters
 
-% cd('R:\ENG_Breuer_Shared\ehandyca\handy_simulink_control_code')
-
+% check if necessary variables were setup
 if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_loaded','var')
     error('Run "setup_DAQ_simulink" to establish experimental setup. Vars "experiment", "bias_unloaded", "bias_loaded" must be established.')
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230511';
+date_start = '20230512';
 
 % Save folder location
-% FOLDERNAME = (['R:\ENG_Breuer_Shared\ehandyca\DATA_main_repo\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlphaValues_APHPH_A3E_02']);
 FOLDERNAME = ([experiment.fname,'\data']);
-
 mkdir(FOLDERNAME);
 
 %% Sweep parameters
@@ -31,11 +30,10 @@ P1star_vec = 30; %,60,80];
 H1star = 1.2;
 P2star_vec = 0; %70; % 65,75
 H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
-% H2star_vec = [0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2];
-% H2star_vec = [1.4,1.6,1.8,2.0,2.2];
 
+initial_phase = -180; 
 phase_step = 20; % phase change between trials
-phase_vec = (-180:phase_step:180);
+phase_vec = (initial_phase:phase_step:180);
 
 num_trials = size(phase_vec,2)*size(H2star_vec,2);
 trial_number = 1;
@@ -44,8 +42,8 @@ trial_number = 1;
 for P1star = P1star_vec
     for P2star = P2star_vec
         for H2star = H2star_vec
-            phase = -180; % initial value of phase difference in degrees
-            while phase <= max(phase_vec)
+            phase = initial_phase; % initial value of phase difference in degrees
+            while phase <= max(phase_vec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
                 %% Take experiment bias measurement
                 
                 bias = bias_loaded; % use bias_loaded as the bias to update the pitch and heave biases in the "fin_bias_simulink" routine
@@ -164,6 +162,7 @@ for P1star = P1star_vec
                     '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
 
                 save(fullfile(FOLDERNAME,FILENAME));
+                
 
                 %% Check for misalignment
                 
@@ -181,6 +180,7 @@ for P1star = P1star_vec
 % 
 %                 end
 %                 close all
+%%          Step forward the phase
             phase = phase + phase_step;
             trial_number = trial_number+1;
             end
@@ -188,6 +188,7 @@ for P1star = P1star_vec
     end
 end
 
+% send an email letting me know the experiment was completed
 message = strjoin(['The experiment finished at ',string(datetime),'. Come and check it out!']);
 sendmail('joel_newbolt@brown.edu','Experiment done',message);
 
