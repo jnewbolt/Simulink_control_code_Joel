@@ -32,7 +32,7 @@ end
 
 raw_encoders(raw_encoders(:,1:2)>1e6) = raw_encoders(raw_encoders(:,1:2)>1e6)-2^32;
 
-out(:,1) = deg2rad((raw_encoders(range_x,1)).*2*pi/10000);
+out(:,1) = raw_encoders(range_x,1).*2*pi/10000;
 out(:,2) = -raw_encoders(range_x,2).*0.0254/8000;
 out(:,3) = deg2rad(conv_encodertheta_traverse(raw_encoders(range_x,3), 0)) - deg2rad(offset_p2);
 out(:,4) = conv_encodery_traverse(raw_encoders(range_x,4), 0) - offset_h2;
