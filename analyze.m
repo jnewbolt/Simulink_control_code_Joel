@@ -1,20 +1,11 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
-% Load data
-datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\';
-% trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
-% trialdir = 'CircCyl_20220919\data\'; namepart1 = 'CylPowerMap_pitch=0deg,f='; namepart2='Hz,A=';
-% trialdir = 'EllipticalCyl_04-Jul-2022_16_7_4\data\'; namepart1 = 'EllipticalCyl_pitch=0deg,f='; namepart2='Hz,A=';
-% trialdir = 'VibManyFreq_27-Oct-2022_18_52_34\data\'; namepart1 = 'Vib_pitch=0deg,f='; namepart2='Hz,A=';
-% filename = 'Data\20220620_foilandvib\vary_phase12\foilandvib_pitch=0deg,f='; name2='Hz,A='; name3='cm,phase12=';
-trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.0265; span = 0.401;
+% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
+datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
+trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
+thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
 
-% % Combine strings to form filename and load last trial to get some necessary variable values from the trial
-% filename = [datadir,trialdir,namepart1];
-% trialfiles = dir([datadir,trialdir]);
-% load([datadir,trialdir,trialfiles(4).name]);
-
+% Type of analysis requested 
 singletrial_analysis = 1;
 manytrial_analysis = 0;
 varyphase = 1;
@@ -25,74 +16,37 @@ Astarvector = (0.0:0.05:1.1);
 ftrials = length(fstarvector); Atrials = length(Astarvector);
     if varyphase==1
     fstarvector = 0.09;
-    phase12vector = (-180:36:144);
+    phase12vector = (-180:20:180);
     ftrials = length(phase12vector); 
     end
 elseif singletrial_analysis==1
 fstarvector = 0.1;
-Astarvector = 0.1;
+Astarvector = 0;
 ftrials = 1; Atrials = 1;
+    if varyphase==1
+    phase12vector = 0;
+    end
 end
 
-addpath(genpath("Libraries"));
+% % Combine strings to form filename and load last trial to get some necessary variable values from the trial
+trialfilename = [datadir,trialdir,namepart1];
+trialfiles = dir([datadir,trialdir]);
+load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
-
-% Parameters
-
-    fvector = 1.81; %fstarvector*U/thcknss;
-    Avector = Astarvector*thcknss*100;
-%     fvector = fstarvector*U/chord;
-%     Avector = Astarvector*chord*100;
-
-
-% Define size of each variable
-f_star_commanded = nan(ftrials,Atrials);
-A_star_commanded = nan(ftrials,Atrials);
-A_star_measured = nan(ftrials,Atrials);
-phase12 = nan(ftrials,Atrials);
-flowspeed_measured_mean = nan(ftrials,Atrials);
-flowspeed_measured_stdev = nan(ftrials,Atrials);
-power_mean = nan(ftrials,Atrials);
-powercoef_mean = nan(ftrials,Atrials);
-power_scale = nan(ftrials,Atrials);
-flowspeed_measured_p2p = nan(ftrials,Atrials);
-f_force_filtered_dom = nan(ftrials,Atrials);
-force_scale = nan(ftrials,Atrials);
-delay = nan(ftrials,Atrials);
-num_forcespecpeaks = nan(ftrials,Atrials);
-liftcoef_alltrials = nan(ftrials,Atrials);
-dragcoef_alltrials = nan(ftrials,Atrials);
-inertialload_alltrials = nan(ftrials,Atrials);
+% Define size of each variable to preallocate memory for arrays
+variablesPreallocated;
 
 % Loop through trials with different flow speed U
 for ftrial = 1:ftrials
-%         T = 1/samplerate;
-        timesteps_persubtrial = round((num_cyc/freq)/T);
-        timesteps_subtrialcropped = round((num_cyc/freq)/T);
-        transient_timesteps = round((transient_cycs/freq)/T); % duration in seconds of transient heaving to crop off at beginning and end
-    
-    % Loop through subtrials with different heave amplitude A
+
+% Loop through subtrials with different heave amplitude A
 for Atrial = 1:Atrials
+    
+    loadTrialData;
 
-%     if varyphase==0
-%         trialname = [filename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
-%     elseif varyphase==1
-% %         trialname = [filename,num2str(fvector,3), ... 
-% %             namepart2,num2str(Avector(Atrial),3), name3,num2str(phase12vector(ftrial)),'deg.mat'];
-%         trialname = [filename,num2str(Avector(Atrial),3),namepart2, name3,num2str(phase12vector(ftrial)),'deg.mat'];
-%     end
-% 
-%     try
-%         load(trialname,'transientcycs','out','Prof_out_angle','freq','phase2')
-%     catch
-% %         disp(['Failed to load ',trialname])
-%     end
-
-
-% %     % Extract measured quantities
-% %     [time_star,heave_commanded,heave_measured,heave_star_measured,pitch_measured,force_D,force_L,inertialload_y,...
-% %     flowspeed_measured,heave_velo,heave_accel] = extract_measurements(transientcycs,freq,T,Prof_out_angle,out);
-
+    % Extract measured quantities
+%     [time_star,heave_commanded,heave_measured,heave_star_measured,pitch_measured,force_D,force_L,inertialload_y,...
+%     flowspeed_measured,heave_velo,heave_accel] = extract_measurements(transientcycs,freq,T,Prof_out_angle,out);
 
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
@@ -135,13 +89,13 @@ for Atrial = 1:Atrials
     force_L_corrected_filtered = filtfilt(b,a,squeeze(force_L_corrected)); 
     force_D_filtered = filtfilt(b,a,squeeze(force_D));
     torque_x0_filtered = filtfilt(b,a,squeeze(torque_x0));
-    force_scale(ftrial,Atrial) = 0.5*1000*thcknss*span*flowspeed_measured_mean(ftrial,Atrial)^2;
+    force_scale(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^2;
     liftcoef = force_L_corrected_filtered/force_scale(ftrial,Atrial);
     dragcoef = force_D_filtered/force_scale(ftrial,Atrial);
-    dragtorquecoef = -torque_x0_filtered/(force_scale(ftrial,Atrial)*span/2);
+    dragtorquecoef = -torque_x0_filtered/(force_scale(ftrial,Atrial)*foil.span/2);
 
 % Calculate power
-    power_scale(ftrial,Atrial) = 0.5*1000*thcknss*span*flowspeed_measured_mean(ftrial,Atrial)^3;
+    power_scale(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^3;
     power_fluid = force_L_corrected_filtered .*heave_velo;
     power_damping = 0*heave_velo.^2;
     power_total = power_fluid + power_damping;
@@ -211,10 +165,6 @@ for Atrial = 1:Atrials
         dragcoef,power_fluid,num_cyc,dragtorquecoef);
     drawnow
     end
-%     disp(['CD', num2str(mean(dragcoef)),'  CL',num2str(mean(liftcoef))]);
-    liftcoef_alltrials(ftrial,Atrial) = mean(liftcoef);
-    dragcoef_alltrials(ftrial,Atrial) = mean(dragcoef);
-    inertialload_alltrials(ftrial,Atrial) = mean(inertialload_y);
 end
 
 
