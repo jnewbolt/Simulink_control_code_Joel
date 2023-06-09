@@ -1,4 +1,5 @@
-function plot_PrescribedMotionForceAndVelocity(time_star,heave_star_measured,heave_velo,liftcoef,dragcoef,powercoef,num_cyc,dragtorquecoef)
+function plot_PrescribedMotionForceAndVelocity(time_star,heave_star_measured,heave_velo,liftcoef,dragcoef,powercoef,num_cyc,dragtorquecoef...
+    ,plotTitle)
 
 hold on
 grid on
@@ -15,5 +16,6 @@ ylim([-15 15])
 xlim([0 num_cyc])
 xlabel('Time (cycles)')
 % ylabel('Heave (cm), Force (N), Power (W)')
+title(plotTitle)
 set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
 end
