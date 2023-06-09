@@ -1,11 +1,19 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
-% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
+%% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
 datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
 trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
-
-% Type of analysis requested 
+%% Some alternate important data locations:
+% trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
+% trialdir = 'CircCyl_20220919\data\'; namepart1 = 'CylPowerMap_pitch=0deg,f='; namepart2='Hz,A=';
+% trialdir = 'EllipticalCyl_04-Jul-2022_16_7_4\data\'; namepart1 = 'EllipticalCyl_pitch=0deg,f='; namepart2='Hz,A=';
+% trialdir = 'VibManyFreq_27-Oct-2022_18_52_34\data\'; namepart1 = 'Vib_pitch=0deg,f='; namepart2='Hz,A=';
+% filename = 'Data\20220620_foilandvib\vary_phase12\foilandvib_pitch=0deg,f='; name2='Hz,A='; name3='cm,phase12=';
+% datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\';
+% trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
+%%
+%% Type of analysis requested 
 singletrial_analysis = 1;
 manytrial_analysis = 0;
 varyphase = 1;
@@ -33,17 +41,42 @@ trialfilename = [datadir,trialdir,namepart1];
 trialfiles = dir([datadir,trialdir]);
 load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
-% Define size of each variable to preallocate memory for arrays
-variablesPreallocated;
-
+%% Define the necessary variables in order to pre-allocate memory
+f_star_commanded = nan(ftrials,Atrials);
+A_star_commanded = nan(ftrials,Atrials);
+A_star_measured = nan(ftrials,Atrials);
+phase12 = nan(ftrials,Atrials);
+flowspeed_measured_mean = nan(ftrials,Atrials);
+flowspeed_measured_stdev = nan(ftrials,Atrials);
+power_mean = nan(ftrials,Atrials);
+powercoef_mean = nan(ftrials,Atrials);
+power_scale = nan(ftrials,Atrials);
+flowspeed_measured_p2p = nan(ftrials,Atrials);
+f_force_filtered_dom = nan(ftrials,Atrials);
+force_scale = nan(ftrials,Atrials);
+delay = nan(ftrials,Atrials);
+num_forcespecpeaks = nan(ftrials,Atrials);
+liftcoef_alltrials = nan(ftrials,Atrials);
+dragcoef_alltrials = nan(ftrials,Atrials);
+inertialload_alltrials = nan(ftrials,Atrials);
+%%
 % Loop through trials with different flow speed U
 for ftrial = 1:ftrials
-
 % Loop through subtrials with different heave amplitude A
 for Atrial = 1:Atrials
-    
-    loadTrialData;
+%% Load the requested trial data
+    if varyphase==0
+        trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
+    elseif varyphase==1
+        trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+    end
 
+    try
+        load(trialname,'transient_cycs','out','profs','freq','phase')
+    catch
+        disp(['Failed to load ',trialname])
+    end
+%%
     % Extract measured quantities
 %     [time_star,heave_commanded,heave_measured,heave_star_measured,pitch_measured,force_D,force_L,inertialload_y,...
 %     flowspeed_measured,heave_velo,heave_accel] = extract_measurements(transientcycs,freq,T,Prof_out_angle,out);
@@ -82,6 +115,7 @@ for Atrial = 1:Atrials
     f_star_commanded(ftrial,Atrial) = thcknss*freq/flowspeed_measured_mean(ftrial,Atrial);
     A_star_commanded(ftrial,Atrial) = (max(heave_commanded)-min(heave_commanded))/(2*thcknss);
     A_star_measured(ftrial,Atrial) = (max(heave_measured)-min(heave_measured))/(2*thcknss);
+%%
 
 % Filter force data
     force_L_corrected = force_L+inertialload_y;
