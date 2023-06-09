@@ -3,7 +3,7 @@ function plot_PrescribedMotionForceAndVelocity(time_star,heave_star_measured,hea
 
 hold on
 grid on
-plot(time_star,heave_star_measured,'DisplayName','{\it y/D}','Color','black','LineWidth',4)
+plot(time_star,heave_star_measured,'DisplayName','{\it y/d}','Color','black','LineWidth',4)
 % plot(time_ND,100*heave_velo,'DisplayName','Heave velocity','Color','green');
 plot(time_star,liftcoef,'DisplayName','{\it C}_L','Color','red','LineWidth',4)
 plot(time_star,dragcoef,'DisplayName','{\it C}_D','Color','blue','LineWidth',4)

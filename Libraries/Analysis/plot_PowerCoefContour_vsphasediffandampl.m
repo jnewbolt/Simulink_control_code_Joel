@@ -22,7 +22,7 @@ contour(phase12_sorted,A_star_sorted,powercoef_mean_sorted,[-1e-6 -1e-6],'LineWi
 scatter(phase12_sorted,A_star_sorted,60,'.','k')
 grid on
 xlabel('Phase between foil and vibrissae (degrees)')
-ylabel('{\it A} * = {\it A/D}')
+ylabel('{\it A} * = {\it A/d}')
 xlim([-190 180])
 ylim([-0.04 1.12])
 set(gca, 'Layer', 'top')

@@ -31,10 +31,11 @@ ftrials = length(fstarvector); Atrials = length(Astarvector);
     end
 elseif singletrial_analysis==1
 fstarvector = 0.1;
-Astarvector = 0.545;
+Astarvector = 1.1;%*(0.0265/0.0535);
 ftrials = 1; Atrials = 1;
     if varyphase==1
-    phase12vector = (-180:20:180); ftrials = length(phase12vector); 
+    phase12vector = 100;%(-180:20:180); 
+    ftrials = length(phase12vector); 
     end
 end
 
@@ -211,7 +212,7 @@ for Atrial = 1:Atrials
         close all
     figure(1)
     plot_PrescribedMotionForceAndVelocity_MATLABin(time_star,heave_star_measured_W,heave_velo,liftcoef_W,...
-        dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Object in wake'); 
+        dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
 %     figure(2)
 %     plot_PrescribedMotionForceAndVelocity_MATLABin(time_star,heave_star_measured_G,heave_velo,liftcoef_G,...
@@ -231,28 +232,28 @@ end
 % powercoef_mean_sorted = [powercoef_mean;powercoef_mean(1,:)];
 
 % Plot acceleration limit
-acc_limit = 4.9; % Acceleration limit in m/s^2
-v_limit = 0.5;
-
-hold on
-% Plot Cp vs. A* and phase12
-contourf(phase12,A_star_measured_W,powercoef_mean,120,'LineStyle','none')
-caxis([-1 0.2])
-colormap(bluewhitered)
-
-contour(phase12,A_star_measured_W,powercoef_mean,[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
-scatter(phase12,A_star_measured_W,60,'.','k')
-grid on
-xlabel('Phase between foil and vibrissae (degrees)')
-ylabel('{\it A} * = {\it A/D}')
-xlim([-190 180])
-ylim([-0.04 1.12])
-set(gca, 'Layer', 'top')
-grid off
-
-c=colorbar();
-c.Label.String = '{\it C}_P';
-% c.Label.Interpreter = 'Latex';
-set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
-
-hold off
+% acc_limit = 4.9; % Acceleration limit in m/s^2
+% v_limit = 0.5;
+% 
+% hold on
+% % Plot Cp vs. A* and phase12
+% contourf(phase12,A_star_measured_W,powercoef_mean,120,'LineStyle','none')
+% caxis([-1 0.6])
+% colormap(bluewhitered)
+% 
+% contour(phase12,A_star_measured_W,powercoef_mean,[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
+% scatter(phase12,A_star_measured_W,60,'.','k')
+% grid on
+% xlabel('Phase between foil and vibrissa (degrees)')
+% ylabel('{\it A} * = {\it A/d}')
+% xlim([-190 180])
+% ylim([-0.04 1.12])
+% set(gca, 'Layer', 'top')
+% grid off
+% 
+% c=colorbar();
+% c.Label.String = '{\it C}_P';
+% % c.Label.Interpreter = 'Latex';
+% set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
+% 
+% hold off
