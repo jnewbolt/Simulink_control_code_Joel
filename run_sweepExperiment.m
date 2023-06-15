@@ -8,7 +8,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230512';
+date_start = '20230613';
 
 % Save folder location
 FOLDERNAME = ([experiment.fname,'\data']);
@@ -26,14 +26,14 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = 30; %,60,80];
+P1star_vec = 0; %,60,80];
 H1star = 1.2;
 P2star_vec = 0; %70; % 65,75
-H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+H2star_vec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
-initial_phase = -180; 
+initial_phase = 0; 
 phase_step = 20; % phase change between trials
-phase_vec = (initial_phase:phase_step:180);
+phase_vec = 0;%(initial_phase:phase_step:180);
 
 num_trials = size(phase_vec,2)*size(H2star_vec,2);
 trial_number = 1;
@@ -59,7 +59,7 @@ for P1star = P1star_vec
 
                 pitch1 = P1star;
 %                 heave1 = H1star*foil.chord;
-                heave1 = 0.024*2.0362; % heave of upstream foil in meters
+                heave1 = 0;%0.024*2.0362; % heave of upstream foil in meters
                 pitch2 = P2star;
                 heave2 = H2star*0.054; % manual value of cross-stream thickness D for vibrissa
                 

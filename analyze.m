@@ -3,9 +3,9 @@
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
 datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
 trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.0265; %cross-stream diameter in meters % Is this necessary? Try to remove
+thcknss = 0.0265; chord_foil = 0.075; span_foil =0.45; %cross-stream diameter in meters % Is this necessary? Try to remove
 trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
+thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
 %% Some alternate important data locations:
 % trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'CircCyl_20220919\data\'; namepart1 = 'CylPowerMap_pitch=0deg,f='; namepart2='Hz,A=';
@@ -16,8 +16,8 @@ thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to re
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
-singletrial_analysis = 0;
-manytrial_analysis = 1;
+singletrial_analysis = 1;
+manytrial_analysis = 0;
 varyphase = 1;
 
 if manytrial_analysis==1
@@ -34,15 +34,15 @@ fstarvector = 0.1;
 Astarvector = 1.1;%*(0.0265/0.0535);
 ftrials = 1; Atrials = 1;
     if varyphase==1
-    phase12vector = 100;%(-180:20:180); 
+    phase12vector = 0;%(-180:20:180); 
     ftrials = length(phase12vector); 
     end
 end
 
 % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
-trialfilename = [datadir,trialdir,namepart1];
-trialfiles = dir([datadir,trialdir]);
-load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
+% trialfilename = [datadir,trialdir,namepart1];
+% trialfiles = dir([datadir,trialdir]);
+% load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
 %% Define the necessary variables in order to pre-allocate memory
 f_star_commanded_W = nan(ftrials,Atrials);
@@ -63,22 +63,26 @@ num_forcespecpeaks = nan(ftrials,Atrials);
 liftcoef_alltrials = nan(ftrials,Atrials);
 dragcoef_alltrials = nan(ftrials,Atrials);
 inertialload_alltrials = nan(ftrials,Atrials);
+torqueLD_scale_G = nan(ftrials,Atrials);
+torquez_scale_G = nan(ftrials,Atrials);
+torqueLD_scale_W = nan(ftrials,Atrials);
+torquez_scale_W = nan(ftrials,Atrials);
 %% Loop through trials with different flow speed U
 for ftrial = 1:ftrials
 % Loop through subtrials with different heave amplitude A
 for Atrial = 1:Atrials
 %% Load the requested trial data
-    if varyphase==0
-        trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
-    elseif varyphase==1
-        trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-    end
-
-    try
-        load(trialname,'transient_cycs','out','profs','freq','phase')
-    catch
-        disp(['Failed to load ',trialname])
-    end
+%     if varyphase==0
+%         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
+%     elseif varyphase==1
+%         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+%     end
+% 
+%     try
+%         load(trialname,'transient_cycs','out','profs','freq','phase')
+%     catch
+%         disp(['Failed to load ',trialname])
+%     end
 %% Extract measured quantities
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
@@ -94,10 +98,10 @@ for Atrial = 1:Atrials
     pitch_commanded_W = outp2.Data;
     heave_measured_G = out(timestep_start:timestep_end,2);
     heave_measured_W = out(timestep_start:timestep_end,4);
-    heave_star_measured_G = heave_measured_G/0.075; % Compared to thin Aluminum foil chord of 7.5cm
+    heave_star_measured_G = heave_measured_G/chord_foil; % Compared to thin Aluminum foil chord of 7.5cm
     heave_star_measured_W = heave_measured_W/thcknss;
-    pitch_measured_G = out(timestep_start:timestep_end,1);
-    pitch_measured_W = out(timestep_start:timestep_end,3);
+    pitch_measured_G = -1/pi*out(timestep_start:timestep_end,1);
+    pitch_measured_W = -1/pi*out(timestep_start:timestep_end,3);
     force_x0_W = out(timestep_start:timestep_end,7);
     force_y0_W = out(timestep_start:timestep_end,8);
     force_z0_W = out(timestep_start:timestep_end,9);
@@ -114,6 +118,11 @@ for Atrial = 1:Atrials
     force_L_G = force_y0_G.*cos(pitch_measured_G) + force_x0_G.*sin(pitch_measured_G);    
     force_D_W = force_x0_W.*cos(pitch_measured_W) - force_y0_W.*sin(pitch_measured_W);
     force_L_W = force_y0_W.*cos(pitch_measured_W) + force_x0_W.*sin(pitch_measured_W);
+    torque_D_G = torque_y0_G.*cos(pitch_measured_G) + torque_x0_G.*sin(pitch_measured_G);
+    torque_L_G = -torque_x0_G.*cos(pitch_measured_G) + torque_y0_G.*sin(pitch_measured_G);
+    torque_D_W = torque_y0_W.*cos(pitch_measured_W) + torque_x0_W.*sin(pitch_measured_W);
+    torque_L_W = -torque_x0_W.*cos(pitch_measured_W) + torque_y0_W.*sin(pitch_measured_W);
+    
     inertialload_y_G = out(timestep_start:timestep_end,23);
     flowspeed_measured = abs(out(timestep_start:timestep_end,13));
 
@@ -134,16 +143,29 @@ for Atrial = 1:Atrials
     force_L_W_corrected_filtered = filtfilt(b,a,squeeze(force_L_W_corrected)); 
     force_D_G_filtered = filtfilt(b,a,squeeze(force_D_G));
     force_D_W_filtered = filtfilt(b,a,squeeze(force_D_W));
-    torque_x0_G_filtered = filtfilt(b,a,squeeze(torque_x0_G));
-    torque_x0_W_filtered = filtfilt(b,a,squeeze(torque_x0_W));
-    force_scale_G(ftrial,Atrial) = 0.5*1000*0.075*0.45*flowspeed_measured_mean(ftrial,Atrial)^2; % for 7.5cm chord foil with 45 cm span
+    torque_D_G_filtered = filtfilt(b,a,squeeze(torque_D_G));
+    torque_D_W_filtered = filtfilt(b,a,squeeze(torque_D_W));
+    torque_L_G_filtered = filtfilt(b,a,squeeze(torque_L_G));
+    torque_L_W_filtered = filtfilt(b,a,squeeze(torque_L_W));
+    torque_z_G_filtered = filtfilt(b,a,squeeze(torque_z0_G));
+    torque_z_W_filtered = filtfilt(b,a,squeeze(torque_z0_W));
+    %% Nondimnesionalize forces and torques using characteristic scales
+    force_scale_G(ftrial,Atrial) = 0.5*1000*chord_foil*span_foil*flowspeed_measured_mean(ftrial,Atrial)^2; % for 7.5cm chord foil with 45 cm span
     force_scale_W(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^2;
+    torqueLD_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*0.5*span_foil;
+    torquez_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*0.5*chord_foil;
+    torqueLD_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*0.5*foil.span;
+    torquez_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*0.5*thcknss;
     liftcoef_G = force_L_G_corrected_filtered/force_scale_G(ftrial,Atrial);
     liftcoef_W = force_L_W_corrected_filtered/force_scale_W(ftrial,Atrial);
     dragcoef_G = force_D_G_filtered/force_scale_G(ftrial,Atrial);
     dragcoef_W = force_D_W_filtered/force_scale_W(ftrial,Atrial);
-    dragtorquecoef_G = -torque_x0_G_filtered/(force_scale_G(ftrial,Atrial)*foil.span/2);
-    dragtorquecoef_W = -torque_x0_W_filtered/(force_scale_W(ftrial,Atrial)*foil.span/2);
+    torqueliftcoef_G = torque_L_G_filtered/torqueLD_scale_G(ftrial,Atrial);
+    torquedragcoef_G = torque_D_G_filtered/torqueLD_scale_G(ftrial,Atrial);
+    torquezcoef_G = torque_z_G_filtered/torquez_scale_G(ftrial,Atrial);
+    torqueliftcoef_W = torque_L_W_filtered/torqueLD_scale_W(ftrial,Atrial);
+    torquedragcoef_W = torque_D_W_filtered/torqueLD_scale_W(ftrial,Atrial);
+    torquezcoef_W = torque_z_W_filtered/torquez_scale_W(ftrial,Atrial);
 
 %% Calculate power
     power_scale(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^3;
@@ -209,15 +231,17 @@ for Atrial = 1:Atrials
 
 %% Plot force and motion
     if singletrial_analysis==1
-        close all
-    figure(1)
-    plot_PrescribedMotionForceAndVelocity_MATLABin(time_star,heave_star_measured_W,heave_velo,liftcoef_W,...
-        dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
-    disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
-%     figure(2)
-%     plot_PrescribedMotionForceAndVelocity_MATLABin(time_star,heave_star_measured_G,heave_velo,liftcoef_G,...
-%         dragcoef_G,power_fluid,num_cyc,dragtorquecoef_G,'Flapping foil upstream');
-    drawnow
+        % Plot lift and drag coefficients and heave position for Wallace
+%     plotForceAndPosition(time_star,heave_star_measured_W,heave_velo,liftcoef_W,...
+%         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
+%     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
+    % Plot lift and drag coefficients and heave position for Gromit
+    titlePlots = 'Flapping foil +/-60deg and +/-1,0chord';
+    plotForceTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+        titlePlots);
+%     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
+%         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
     end
 end
 
