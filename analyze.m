@@ -126,8 +126,12 @@ for Atrial = 1:Atrials
     inertialload_y_G = out(timestep_start:timestep_end,23);
     flowspeed_measured = abs(out(timestep_start:timestep_end,13));
 
-    heave_velo = movmean((1/T)*gradient(squeeze(heave_measured_W)),100);
-    heave_accel = movmean((1/T)*gradient(squeeze(heave_velo)),100);
+    pitch_velo_G = movmean((1/T)*gradient(squeeze(pitch_measured_G)),100);
+    pitch_accel_G = movmean((1/T)*gradient(squeeze(pitch_velo_G)),100);
+    heave_velo_G = movmean((1/T)*gradient(squeeze(heave_measured_G)),100);
+    heave_accel_G = movmean((1/T)*gradient(squeeze(heave_velo_G)),100);
+    heave_velo_W = movmean((1/T)*gradient(squeeze(heave_measured_W)),100);
+    heave_accel_W = movmean((1/T)*gradient(squeeze(heave_velo_W)),100);
 
     flowspeed_measured_mean(ftrial,Atrial) = mean(flowspeed_measured);
     flowspeed_measured_stdev(ftrial,Atrial) = std(flowspeed_measured);
@@ -242,6 +246,7 @@ for Atrial = 1:Atrials
         titlePlots);
     plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
         torquezcoef_G,titlePlots)
+    
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
 %         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
     end
