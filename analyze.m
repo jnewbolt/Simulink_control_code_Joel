@@ -236,7 +236,7 @@ for Atrial = 1:Atrials
 %         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
     % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = 'Flapping foil +/-60deg and +/-1,0chord';
+    titlePlots = ['Flapping foil +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
         titlePlots);

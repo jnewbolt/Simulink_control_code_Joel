@@ -26,8 +26,9 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = 0; %,60,80];
-H1star = 1.2;
+P1star_vec = (0:2:10); %,60,80]; % pitch amplitude in degrees
+H1star_vec = (0:0.1:0.5); % heave amplitude in chord lengths
+chord_foil = 0.075; % chord length of upstream foil in meters
 P2star_vec = 0; %70; % 65,75
 H2star_vec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
@@ -40,6 +41,7 @@ trial_number = 1;
 %% Experimental loop
 
 for P1star = P1star_vec
+for H1star = H1star_vec
     for P2star = P2star_vec
         for H2star = H2star_vec
             phase = initial_phase; % initial value of phase difference in degrees
@@ -59,7 +61,7 @@ for P1star = P1star_vec
 
                 pitch1 = P1star;
 %                 heave1 = H1star*foil.chord;
-                heave1 = 0;%0.024*2.0362; % heave of upstream foil in meters
+                heave1 = H1star*chord_foil;%0.024*2.0362; % heave of upstream foil in meters
                 pitch2 = P2star;
                 heave2 = H2star*0.054; % manual value of cross-stream thickness D for vibrissa
                 
@@ -159,7 +161,9 @@ for P1star = P1star_vec
 %                 FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
 %                     'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
                 FILENAME = (['\',date_start,'_PrescribedMotion',...
-                    '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
+                    '_p1=',num2str(pitch1,2),'deg_h1=',num2str(heave1,3),'cm_ph=',num2str(phase),'deg.mat']);
+%                 FILENAME = (['\',date_start,'_PrescribedMotion',...
+%                     '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2,3),'cm_ph=',num2str(phase),'deg.mat']);
 
                 save(fullfile(FOLDERNAME,FILENAME));
                 
@@ -186,6 +190,7 @@ for P1star = P1star_vec
             end
         end
     end
+end
 end
 
 % send an email letting me know the experiment was completed
