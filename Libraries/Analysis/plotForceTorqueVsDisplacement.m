@@ -2,7 +2,7 @@ function plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured,heave_sta
         torquezcoef,titlePlots)
 %(time_star,pitch_measured,heave_star_measured,liftcoef,dragcoef, ...
 %    powercoef,torqueliftcoef,torquedragcoef,torquezcoef,num_cyc,plotTitle)
-figure
+figure('Position', [100 80 1600 900])
 hold on
 grid on
 plot(heave_star_measured,liftcoef,'DisplayName','{\it C}_L vs. {\it y/d}','Color','red','LineWidth',4)

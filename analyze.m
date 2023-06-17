@@ -92,9 +92,7 @@ for Atrial = 1:Atrials
         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
     end
     if varypitch1 ==1
-        
         trialname = [trialfilename,num2str(P1star_vec(ftrial)),namepart2,num2str(H1star_vec(Atrial)*chord_foil),namepart3,'.mat'];
-    disp(num2str(trialname))
     end
 
     try
@@ -260,18 +258,19 @@ for Atrial = 1:Atrials
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
     % Plot lift and drag coefficients and heave position for Gromit
     titlePlots = ['Flapping foil +/-',num2str(P1star_vec(ftrial)),'deg and +/-',num2str(H1star_vec(Atrial)),'chord'];
-    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
-        titlePlots);
+%     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+%         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+%         titlePlots);
+
+    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+        torquezcoef_G,titlePlots)
     % Make a gif
     drawnow
     fig = gcf;
     frame = getframe(fig);
-    figNumber = get(gcf,'Number');
-    im{figNumber} = frame2im(frame);
+    idx = Atrial+(ftrial-1)*Atrials;
+    im{idx} = frame2im(frame);
 
-%     plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-%         torquezcoef_G,titlePlots)
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
 %         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
@@ -290,6 +289,7 @@ end
             imwrite(A,map,filenameGIF,"gif","WriteMode","append","DelayTime",1);
         end
     end
+    clear im
 %% Plot Power coefficient contour
 % Plot vs phase
 % f_star_sorted = f_star_commanded;
