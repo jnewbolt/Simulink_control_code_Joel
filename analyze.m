@@ -71,9 +71,10 @@ torquez_scale_G = nan(ftrials,Atrials);
 torqueLD_scale_W = nan(ftrials,Atrials);
 torquez_scale_W = nan(ftrials,Atrials);
 %% Loop through trials with different flow speed U
-for ftrial = 1:ftrials
 % Loop through subtrials with different heave amplitude A
 for Atrial = 1:Atrials
+for ftrial = 1:ftrials
+
 %% Load the requested trial data
 %     if varyphase==0
 %         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
@@ -173,10 +174,10 @@ for Atrial = 1:Atrials
     %% Nondimnesionalize forces and torques using characteristic scales
     force_scale_G(ftrial,Atrial) = 0.5*1000*chord_foil*span_foil*flowspeed_measured_mean(ftrial,Atrial)^2; % for 7.5cm chord foil with 45 cm span
     force_scale_W(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^2;
-    torqueLD_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*0.5*span_foil;
-    torquez_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*0.5*chord_foil;
-    torqueLD_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*0.5*foil.span;
-    torquez_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*0.5*thcknss;
+    torqueLD_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*span_foil;
+    torquez_scale_G(ftrial,Atrial) = force_scale_G(ftrial,Atrial)*chord_foil;
+    torqueLD_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*foil.span;
+    torquez_scale_W(ftrial,Atrial) = force_scale_W(ftrial,Atrial)*thcknss;
     liftcoef_G = force_L_G_corrected_filtered/force_scale_G(ftrial,Atrial);
     liftcoef_W = force_L_W_corrected_filtered/force_scale_W(ftrial,Atrial);
     dragcoef_G = force_D_G_filtered/force_scale_G(ftrial,Atrial);
@@ -268,7 +269,8 @@ for Atrial = 1:Atrials
     drawnow
     fig = gcf;
     frame = getframe(fig);
-    idx = Atrial+(ftrial-1)*Atrials;
+%     idx = Atrial+(ftrial-1)*Atrials;
+    idx = ftrial+(Atrial-1)*ftrials;
     im{idx} = frame2im(frame);
 
     
@@ -289,7 +291,7 @@ end
             imwrite(A,map,filenameGIF,"gif","WriteMode","append","DelayTime",1);
         end
     end
-    clear im
+    close all
 %% Plot Power coefficient contour
 % Plot vs phase
 % f_star_sorted = f_star_commanded;

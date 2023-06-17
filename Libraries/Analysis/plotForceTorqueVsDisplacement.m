@@ -6,7 +6,7 @@ figure('Position', [100 80 1600 900])
 hold on
 grid on
 plot(heave_star_measured,liftcoef,'DisplayName','{\it C}_L vs. {\it y/d}','Color','red','LineWidth',4)
-plot(pitch_measured,torquezcoef,'DisplayName','{\it C}_{z\tau} vs. {\it \theta/\pi}','Color',"#FF00FF",'LineWidth',4)
+plot(pitch_measured,torquezcoef,'DisplayName','{\it C}_{z\tau} vs. {\it \theta} (rad)','Color',"#FF00FF",'LineWidth',4)
 % Show arrows to indicate the direction of the force trajectory around the force loop with time
 quiver(heave_star_measured(1),liftcoef(1),heave_star_measured(2)-heave_star_measured(1),liftcoef(2)-liftcoef(1),...
     'LineWidth',4,'MaxHeadSize',1,'Color','black','AutoScaleFactor',50,'HandleVisibility','off')
@@ -24,8 +24,8 @@ quiver(pitch_measured(halfPeriodStep),torquezcoef(halfPeriodStep),...
 hold off
 
 legend()
-ylim([-15 15])
-xlim([-1 1])
+ylim([-8 8])
+xlim([-0.6 0.6])
 xlabel('Displacement (dimensionless)')
 ylabel('Force or torque coefficients')
 title(titlePlots)
