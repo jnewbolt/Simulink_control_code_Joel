@@ -1,8 +1,8 @@
 function plotForceTorqueDisplacementVsTime(time_star,pitch_measured,heave_star_measured,liftcoef,dragcoef, ...
     powercoef,torqueliftcoef,torquedragcoef,torquezcoef,num_cyc,plotTitle)
-figure
-hold on
+figure('Position', [100 80 1600 900])
 grid on
+hold on
 plot(time_star,zeros(1,length(time_star)),'HandleVisibility','off','Color','#333333','LineWidth',3)
 plot(time_star,pitch_measured,'DisplayName','{\it \theta/\pi } ','Color','black','LineWidth',4,'LineStyle','--')
 plot(time_star,heave_star_measured,'DisplayName','{\it y/d}','Color','black','LineWidth',4)

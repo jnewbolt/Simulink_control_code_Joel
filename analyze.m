@@ -3,8 +3,10 @@
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
 datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
 trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.0265; chord_foil = 0.075; span_foil =0.45; %cross-stream diameter in meters % Is this necessary? Try to remove
+thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
 trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
+thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
+trialdir = 'FoilSymmetryTest2\data\'; namepart1 = '20230616_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
 thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
 %% Some alternate important data locations:
 % trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
@@ -17,16 +19,17 @@ thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in m
 %%
 %% Type of analysis requested 
 singletrial_analysis = 1;
-manytrial_analysis = 0;
+manytrial_analysis = 1;
 varyphase = 1;
+varypitch1 = 1;
 
 if manytrial_analysis==1
-fstarvector = (0.1:0.02:0.6);%(0.05:0.01:0.14);
-Astarvector = (0.0:0.05:1.1);%*(0.0265/0.0535);
+fstarvector = (0:2:10);%(0.05:0.01:0.14);
+Astarvector = (0:0.1:0.5);%*(0.0265/0.0535);
 ftrials = length(fstarvector); Atrials = length(Astarvector);
     if varyphase==1
     fstarvector = 0.09;
-    phase12vector = (-180:20:180);
+    phase12vector = (0:2:10);
     ftrials = length(phase12vector); 
     end
 elseif singletrial_analysis==1
@@ -40,9 +43,9 @@ ftrials = 1; Atrials = 1;
 end
 
 % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
-% trialfilename = [datadir,trialdir,namepart1];
-% trialfiles = dir([datadir,trialdir]);
-% load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
+trialfilename = [datadir,trialdir,namepart1];
+trialfiles = dir([datadir,trialdir]);
+load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
 %% Define the necessary variables in order to pre-allocate memory
 f_star_commanded_W = nan(ftrials,Atrials);
@@ -83,6 +86,22 @@ for Atrial = 1:Atrials
 %     catch
 %         disp(['Failed to load ',trialname])
 %     end
+    if varyphase==0
+        trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarector(Atrial),3),'cm.mat'];
+    elseif varyphase==1
+        trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+    end
+    if varypitch1 ==1
+        
+        trialname = [trialfilename,num2str(P1star_vec(ftrial)),namepart2,num2str(H1star_vec(Atrial)*chord_foil),namepart3,'.mat'];
+    disp(num2str(trialname))
+    end
+
+    try
+        load(trialname,'transient_cycs','out','profs','freq','phase')
+    catch
+        disp(['Failed to load ',trialname])
+    end
 %% Extract measured quantities
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
@@ -173,8 +192,8 @@ for Atrial = 1:Atrials
 
 %% Calculate power
     power_scale(ftrial,Atrial) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(ftrial,Atrial)^3;
-    power_fluid = force_L_W_corrected_filtered .*heave_velo;
-    power_damping = 0*heave_velo.^2;
+    power_fluid = force_L_W_corrected_filtered .*heave_velo_W;
+    power_damping = 0*heave_velo_W.^2;
     power_total = power_fluid + power_damping;
     power_mean(ftrial,Atrial) = mean(power_fluid);
     powercoef = power_fluid/power_scale(ftrial,Atrial);
@@ -240,12 +259,19 @@ for Atrial = 1:Atrials
 %         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
     % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Flapping foil +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+    titlePlots = ['Flapping foil +/-',num2str(P1star_vec(ftrial)),'deg and +/-',num2str(H1star_vec(Atrial)),'chord'];
     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
         titlePlots);
-    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        torquezcoef_G,titlePlots)
+    % Make a gif
+    drawnow
+    fig = gcf;
+    frame = getframe(fig);
+    figNumber = get(gcf,'Number');
+    im{figNumber} = frame2im(frame);
+
+%     plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+%         torquezcoef_G,titlePlots)
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
 %         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
@@ -253,6 +279,17 @@ for Atrial = 1:Atrials
 end
 
 end
+%% Save .gif of plots
+    filenameGIF = "testAnimated.gif"; % Specify the output file name
+    nImages = length(im);
+    for idx = 1:nImages
+        [A,map] = rgb2ind(im{idx},256);
+        if idx == 1
+            imwrite(A,map,filenameGIF,"gif","LoopCount",Inf,"DelayTime",1);
+        else
+            imwrite(A,map,filenameGIF,"gif","WriteMode","append","DelayTime",1);
+        end
+    end
 %% Plot Power coefficient contour
 % Plot vs phase
 % f_star_sorted = f_star_commanded;
