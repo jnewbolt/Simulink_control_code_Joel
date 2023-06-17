@@ -19,25 +19,26 @@ thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in m
 %%
 %% Type of analysis requested 
 singletrial_analysis = 1;
-manytrial_analysis = 1;
+manytrial_analysis = 0;
 varyphase = 1;
 varypitch1 = 1;
+createGIF = 0;
 
 if manytrial_analysis==1
 fstarvector = (0:2:10);%(0.05:0.01:0.14);
 Astarvector = (0:0.1:0.5);%*(0.0265/0.0535);
 ftrials = length(fstarvector); Atrials = length(Astarvector);
     if varyphase==1
-    fstarvector = 0.09;
+    fstarvector = (0:2:10);
     phase12vector = (0:2:10);
     ftrials = length(phase12vector); 
     end
 elseif singletrial_analysis==1
-fstarvector = 0.1;
-Astarvector = 1.1;%*(0.0265/0.0535);
+fstarvector = 2;
+Astarvector = 0;%*(0.0265/0.0535);
 ftrials = 1; Atrials = 1;
     if varyphase==1
-    phase12vector = 0;%(-180:20:180); 
+    phase12vector = 2;%(-180:20:180); 
     ftrials = length(phase12vector); 
     end
 end
@@ -63,8 +64,8 @@ force_scale_W = nan(ftrials,Atrials);
 force_scale_G = nan(ftrials,Atrials);
 delay = nan(ftrials,Atrials);
 num_forcespecpeaks = nan(ftrials,Atrials);
-liftcoef_alltrials = nan(ftrials,Atrials);
-dragcoef_alltrials = nan(ftrials,Atrials);
+liftcoef_alltrials_G = nan(ftrials,Atrials);
+dragcoef_alltrials_G = nan(ftrials,Atrials);
 inertialload_alltrials = nan(ftrials,Atrials);
 torqueLD_scale_G = nan(ftrials,Atrials);
 torquez_scale_G = nan(ftrials,Atrials);
@@ -88,12 +89,12 @@ for ftrial = 1:ftrials
 %         disp(['Failed to load ',trialname])
 %     end
     if varyphase==0
-        trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarector(Atrial),3),'cm.mat'];
+        trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
     elseif varyphase==1
         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
     end
     if varypitch1 ==1
-        trialname = [trialfilename,num2str(P1star_vec(ftrial)),namepart2,num2str(H1star_vec(Atrial)*chord_foil),namepart3,'.mat'];
+        trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
     end
 
     try
@@ -118,8 +119,8 @@ for ftrial = 1:ftrials
     heave_measured_W = out(timestep_start:timestep_end,4);
     heave_star_measured_G = heave_measured_G/chord_foil; % Compared to thin Aluminum foil chord of 7.5cm
     heave_star_measured_W = heave_measured_W/thcknss;
-    pitch_measured_G = -1/pi*out(timestep_start:timestep_end,1);
-    pitch_measured_W = -1/pi*out(timestep_start:timestep_end,3);
+    pitch_measured_G = -1*out(timestep_start:timestep_end,1);
+    pitch_measured_W = -1*out(timestep_start:timestep_end,3);
     force_x0_W = out(timestep_start:timestep_end,7);
     force_y0_W = out(timestep_start:timestep_end,8);
     force_z0_W = out(timestep_start:timestep_end,9);
@@ -258,13 +259,14 @@ for ftrial = 1:ftrials
 %         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
     % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Flapping foil +/-',num2str(P1star_vec(ftrial)),'deg and +/-',num2str(H1star_vec(Atrial)),'chord'];
-%     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-%         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
-%         titlePlots);
+    titlePlots = ['Flapping foil +/-',num2str(fstarvector(ftrial)),'deg and +/-',num2str(Astarvector(ftrial)),'chord'];
+    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+        titlePlots);
 
-    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        torquezcoef_G,titlePlots)
+%     plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+%         torquezcoef_G,titlePlots)
+    if createGIF == 1
     % Make a gif
     drawnow
     fig = gcf;
@@ -272,6 +274,7 @@ for ftrial = 1:ftrials
 %     idx = Atrial+(ftrial-1)*Atrials;
     idx = ftrial+(Atrial-1)*ftrials;
     im{idx} = frame2im(frame);
+    end
 
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
@@ -281,6 +284,7 @@ end
 
 end
 %% Save .gif of plots
+if createGIF == 1
     filenameGIF = "testAnimated.gif"; % Specify the output file name
     nImages = length(im);
     for idx = 1:nImages
@@ -292,6 +296,7 @@ end
         end
     end
     close all
+end
 %% Plot Power coefficient contour
 % Plot vs phase
 % f_star_sorted = f_star_commanded;
