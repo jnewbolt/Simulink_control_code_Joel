@@ -1,26 +1,28 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
+datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\';
 trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
 trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
 trialdir = 'FoilSymmetryTest2\data\'; namepart1 = '20230616_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
 thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
+% trialdir = 'FoilSymmetryTestSmallFoil\data\'; namepart1 = '20230620_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
+% thcknss = 0.054; %chord_foil = 0.06; span_foil =0.365;%cross-stream diameter in meters % Is this necessary? Try to remove
 %% Some alternate important data locations:
 % trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'CircCyl_20220919\data\'; namepart1 = 'CylPowerMap_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'EllipticalCyl_04-Jul-2022_16_7_4\data\'; namepart1 = 'EllipticalCyl_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'VibManyFreq_27-Oct-2022_18_52_34\data\'; namepart1 = 'Vib_pitch=0deg,f='; namepart2='Hz,A=';
 % filename = 'Data\20220620_foilandvib\vary_phase12\foilandvib_pitch=0deg,f='; name2='Hz,A='; name3='cm,phase12=';
-% datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\';
+% datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\';
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
 singletrial_analysis = 1;
 manytrial_analysis = 0;
-varyphase = 1;
+varyphase = 0;
 varypitch1 = 1;
 createGIF = 0;
 
@@ -34,8 +36,8 @@ ftrials = length(fstarvector); Atrials = length(Astarvector);
     ftrials = length(phase12vector); 
     end
 elseif singletrial_analysis==1
-fstarvector = 2;
-Astarvector = 0;%*(0.0265/0.0535);
+fstarvector = 10;
+Astarvector = 0.4;%*(0.0265/0.0535);
 ftrials = 1; Atrials = 1;
     if varyphase==1
     phase12vector = 2;%(-180:20:180); 
@@ -259,7 +261,7 @@ for ftrial = 1:ftrials
 %         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(ftrial,Atrial))]);pause(5)
     % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Flapping foil +/-',num2str(fstarvector(ftrial)),'deg and +/-',num2str(Astarvector(ftrial)),'chord'];
+    titlePlots = ['Flapping foil +/-',num2str(fstarvector(ftrial)),'deg and +/-',num2str(Astarvector(Atrial)),'chord'];
     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
         titlePlots);

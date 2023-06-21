@@ -21,7 +21,7 @@ plot(time_star, mean(dragcoef)*ones(length(time_star),1),'Color','blue','LineWid
 hold off
 
 legend()
-ylim([-1 1])
+ylim([-0.5 0.5])
 xlim([9.75 12.75])
 xlabel('Time (cycles)')
 ylabel('Displacements and force coefficients')
