@@ -45,10 +45,10 @@ ftrials = 1; Atrials = 1;
     end
 end
 
-% % Combine strings to form filename and load last trial to get some necessary variable values from the trial
-trialfilename = [datadir,trialdir,namepart1];
-trialfiles = dir([datadir,trialdir]);
-load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
+% % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
+% trialfilename = [datadir,trialdir,namepart1];
+% trialfiles = dir([datadir,trialdir]);
+% load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
 %% Define the necessary variables in order to pre-allocate memory
 f_star_commanded_W = nan(ftrials,Atrials);
@@ -79,10 +79,24 @@ for Atrial = 1:Atrials
 for ftrial = 1:ftrials
 
 %% Load the requested trial data
+% %     if varyphase==0
+% %         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
+% %     elseif varyphase==1
+% %         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+% %     end
+% % 
+% %     try
+% %         load(trialname,'transient_cycs','out','profs','freq','phase')
+% %     catch
+% %         disp(['Failed to load ',trialname])
+% %     end
 %     if varyphase==0
-%         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
+%         trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
 %     elseif varyphase==1
 %         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+%     end
+%     if varypitch1 ==1
+%         trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
 %     end
 % 
 %     try
@@ -90,20 +104,6 @@ for ftrial = 1:ftrials
 %     catch
 %         disp(['Failed to load ',trialname])
 %     end
-    if varyphase==0
-        trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
-    elseif varyphase==1
-        trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-    end
-    if varypitch1 ==1
-        trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
-    end
-
-    try
-        load(trialname,'transient_cycs','out','profs','freq','phase')
-    catch
-        disp(['Failed to load ',trialname])
-    end
 %% Extract measured quantities
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
