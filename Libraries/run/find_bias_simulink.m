@@ -146,7 +146,7 @@ out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vect
 %% Raise warnings for potentially faulty measurements
 
 if bias.accmeter < 1.5 || bias.accmeter > 1.8
-    disp(bias.accmeter)
+    disp(['Accelerometer voltage is ', num2str(bias.accmeter,3), ' Volts'])
     disp('Warning: Accelerometer voltage outside expected range. Try power cycling.')
 end
 

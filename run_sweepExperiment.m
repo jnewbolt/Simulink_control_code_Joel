@@ -8,7 +8,7 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
 end
 
 % Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230712';
+date_start = '20230713';
 
 % Save folder location
 FOLDERNAME = ([experiment.fname,'\data']);
@@ -26,15 +26,15 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = (0:10:30); %,60,80]; % pitch amplitude in degrees
-H1star_vec = (0:0.2:0.6); % heave amplitude in chord lengths
+P1star_vec = 20; %(0:10:30); %,60,80]; % pitch amplitude in degrees
+H1star_vec = 0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
 chord_foil = 0.075; % chord length of upstream foil in meters
 P2star_vec = 0; %70; % 65,75
-H2star_vec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
 initial_phase = 0; 
 phase_step = 20; % phase change between trials
-phase_vec = 0;%(initial_phase:phase_step:180);
+phase_vec = (initial_phase:phase_step:180);
 
 num_trials = size(phase_vec,2)*size(H2star_vec,2);
 trial_number = 1;

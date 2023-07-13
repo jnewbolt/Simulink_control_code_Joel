@@ -32,13 +32,13 @@ while repeat_alignment == 1
     %% Generate profiles
     % for initial search:
     scan_time = 5;
-    search_amplitude = 5;
+    search_amplitude = 2;
     expand_search = 0;
 
     while expand_search < 2
         expand_search = expand_search + 1;
 
-        [toime, outp1, outh1, outp2, outh2, sync_sig] = alingment_profile(experiment, traverse, scan_time, search_amplitude, bias);
+        [toime, outp1, outh1, outp2, outh2, sync_sig] = alignment_profile(experiment, traverse, scan_time, search_amplitude, bias);
     
         % simulation time
         sim_time = ceil(toime(end))+2;
@@ -105,10 +105,13 @@ while repeat_alignment == 1
         aL_neg = coefL1_neg(1);
         bL_neg = coefL1_neg(2);
     
-        plot(1:numel(pitch_pos), pitch_pos, 1:numel(Fy_pos), smooth(Fy_pos,100), 1:numel(Fy_pos), aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
-        plot(1:numel(pitch_neg), pitch_neg, 1:numel(Fy_neg), smooth(Fy_neg,100), 1:numel(Fy_neg), aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
-    
-        legend('Pitch negative','Fy smoothed','Linear fit','Pitch positive','Fy smoothed','Linear fit');
+        figure;
+%         plot(1:numel(pitch_pos), pitch_pos, 1:numel(Fy_pos), smooth(Fy_pos,100), 1:numel(Fy_pos), aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
+%         plot(1:numel(pitch_neg), pitch_neg, 1:numel(Fy_neg), smooth(Fy_neg,100), 1:numel(Fy_neg), aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
+%         legend('Pitch negative','Fy smoothed','Linear fit','Pitch positive','Fy smoothed','Linear fit');
+        plot(pitch_pos, Fy_pos,pitch_pos, aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
+        plot(pitch_neg, Fy_neg,pitch_neg, aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
+        legend('Fy smoothed','Linear fit','Fy smoothed','Linear fit')
     
         %% Expanding search
     
@@ -158,7 +161,7 @@ disp([traverse_name, ' alignment done.']);
 
 %% In-routine functions
 
-    function [toime, outp1, outh1, outp2, outh2, sync_sig] = alingment_profile(experiment, traverse, t, ppos, bias)
+function [toime, outp1, outh1, outp2, outh2, sync_sig] = alignment_profile(experiment, traverse, t, ppos, bias)
         
         T = 1/experiment.srate;
         
