@@ -7,13 +7,6 @@ if ~exist('experiment','var') ||  ~exist('bias_unloaded','var') || ~exist('bias_
     error('Run "setup_DAQ_simulink" to establish experimental setup. Vars "experiment", "bias_unloaded", "bias_loaded" must be established.')
 end
 
-% Date (don't auto-generate date in case experiment runs overnight)
-date_start = '20230713';
-
-% Save folder location
-FOLDERNAME = ([experiment.fname,'\data']);
-mkdir(FOLDERNAME);
-
 %% Sweep parameters
 
 % non-changing parameters
@@ -30,13 +23,13 @@ P1star_vec = 20; %(0:10:30); %,60,80]; % pitch amplitude in degrees
 H1star_vec = 0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
 chord_foil = 0.075; % chord length of upstream foil in meters
 P2star_vec = 0; %70; % 65,75
-H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+H2star_vec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
 initial_phase = -180; 
 phase_step = 20; % phase change between trials
-phase_vec = (initial_phase:phase_step:180);
+phase_vec = initial_phase;%(initial_phase:phase_step:180);
 
-num_trials = size(phase_vec,2)*size(H2star_vec,2);
+num_trials = length(P1star_vec)*length(H1star_vec)*length(P2star_vec)*length(H2star_vec)*length(phase_vec);
 trial_number = 1;
 %% Experimental loop
 
@@ -160,12 +153,12 @@ for H1star = H1star_vec
                 motor_warning_flag = 0;
 %                 FILENAME = (['\',date_start,'_TandemTuesday_4c_separation_3alphaSweep_diffAlpha_',...
 %                     'aT4=',num2str(aT4,3),'_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2/foil.chord,3),'c_ph=',num2str(phase),'deg.mat']);
-                FILENAME = (['\',date_start,'_PrescribedMotion',...
-                    '_p1=',num2str(pitch1,2),'deg_h1=',num2str(heave1,3),'cm_ph=',num2str(phase),'deg.mat']);
+%                 FILENAME = (['\',date_start,'_PrescribedMotion',...
+%                     '_p1=',num2str(pitch1,2),'deg_h1=',num2str(heave1,3),'cm_ph=',num2str(phase),'deg.mat']);
 %                 FILENAME = (['\',date_start,'_PrescribedMotion',...
 %                     '_p2=',num2str(pitch2,2),'deg_h2=',num2str(heave2,3),'cm_ph=',num2str(phase),'deg.mat']);
-
-                save(fullfile(FOLDERNAME,FILENAME));
+                trialfilename = ['trial_',num2str(trial_number)];
+                save([folder_name,'\',trialfilename]);
                 
 
                 %% Check for misalignment
