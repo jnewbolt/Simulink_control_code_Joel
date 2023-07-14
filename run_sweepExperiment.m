@@ -32,7 +32,7 @@ chord_foil = 0.075; % chord length of upstream foil in meters
 P2star_vec = 0; %70; % 65,75
 H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 
-initial_phase = 0; 
+initial_phase = -180; 
 phase_step = 20; % phase change between trials
 phase_vec = (initial_phase:phase_step:180);
 

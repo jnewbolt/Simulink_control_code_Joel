@@ -89,7 +89,14 @@ else
     experiment.fname = ['D:\Experiments\',num2str(experiment.Number_of_foils),'foil\',answer{19}];
 end
 
-mkdir(experiment.fname);
+
+[status, msg, msgID] = mkdir(experiment.fname);
+while strcmp(msg,'Directory already exists.')
+    new_dir = input('Chosen directory name already exists!  Please type a new folder name below, then hit enter. \n',"s");
+    experiment.fname = ['D:\Experiments\',num2str(experiment.Number_of_foils),'foil\',new_dir];
+    [status, msg, msgID] = mkdir(experiment.fname);
+end
+% mkdir(experiment.fname);
 folder_name = [experiment.fname,'\data'];
 mkdir(folder_name); % for the bias measurements
 

@@ -2,12 +2,14 @@
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
 datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\';
-trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
-trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
-thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
-trialdir = 'FoilSymmetryTest2\data\'; namepart1 = '20230616_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
-thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
+trialdir = 'SmallFoilAndVib_2\data\'; namepart1 = '20230713_PrescribedMotion_p1=20deg_h1='; namepart2 = 'cm_ph='; namepart3 = 'deg';
+thcknss = 0.0265; span_foil =0.365;%chord_foil = 0.06; %cross
+% trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
+% thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
+% trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
+% thcknss = 0.054; %cross-stream diameter in meters % Is this necessary? Try to remove
+% trialdir = 'FoilSymmetryTest2\data\'; namepart1 = '20230616_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
+% thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
 % trialdir = 'FoilSymmetryTestSmallFoil\data\'; namepart1 = '20230620_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
 % thcknss = 0.054; %chord_foil = 0.06; span_foil =0.365;%cross-stream diameter in meters % Is this necessary? Try to remove
 %% Some alternate important data locations:
@@ -22,8 +24,8 @@ thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in m
 %% Type of analysis requested 
 singletrial_analysis = 1;
 manytrial_analysis = 0;
-varyphase = 0;
-varypitch1 = 1;
+varyphase = 1;
+varypitch1 = 0;
 createGIF = 0;
 
 if manytrial_analysis==1
@@ -37,18 +39,18 @@ ftrials = length(fstarvector); Atrials = length(Astarvector);
     end
 elseif singletrial_analysis==1
 fstarvector = 10;
-Astarvector = 0.4;%*(0.0265/0.0535);
+Astarvector = 0.5*(0.0265/0.0535);
 ftrials = 1; Atrials = 1;
     if varyphase==1
-    phase12vector = 2;%(-180:20:180); 
+    phase12vector = (-180:20:180); 
     ftrials = length(phase12vector); 
     end
 end
 
 % % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
-% trialfilename = [datadir,trialdir,namepart1];
-% trialfiles = dir([datadir,trialdir]);
-% load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
+trialfilename = [datadir,trialdir,namepart1];
+trialfiles = dir([datadir,trialdir]);
+load([datadir,trialdir,trialfiles(4).name]); % also should remove the need for this
 
 %% Define the necessary variables in order to pre-allocate memory
 f_star_commanded_W = nan(ftrials,Atrials);
@@ -79,24 +81,10 @@ for Atrial = 1:Atrials
 for ftrial = 1:ftrials
 
 %% Load the requested trial data
-% %     if varyphase==0
-% %         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
-% %     elseif varyphase==1
-% %         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-% %     end
-% % 
-% %     try
-% %         load(trialname,'transient_cycs','out','profs','freq','phase')
-% %     catch
-% %         disp(['Failed to load ',trialname])
-% %     end
 %     if varyphase==0
-%         trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
+%         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
 %     elseif varyphase==1
 %         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-%     end
-%     if varypitch1 ==1
-%         trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
 %     end
 % 
 %     try
@@ -104,6 +92,20 @@ for ftrial = 1:ftrials
 %     catch
 %         disp(['Failed to load ',trialname])
 %     end
+    if varyphase==0
+        trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
+    elseif varyphase==1
+        trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
+    end
+    if varypitch1 ==1
+        trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
+    end
+
+    try
+        load(trialname,'transient_cycs','out','profs','freq','phase')
+    catch
+        disp(['Failed to load ',trialname])
+    end
 %% Extract measured quantities
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
