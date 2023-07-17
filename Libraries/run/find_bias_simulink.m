@@ -151,14 +151,15 @@ if bias.accmeter < 1.5 || bias.accmeter > 1.8
 end
 
 bias.RMSEW = sqrt(mean((raw_force_wallace - repmat(bias.Wallace,numel(raw_force_wallace(:,1)),1)).^2));
-if sum(bias.RMSEW>[.15 .15 .3 .1 .1 .1])>0 
-        disp(bias.RMSEW);
-    disp('Warning: Wallace error signal above normal. Check wiring/ grounding.')
-end
+
 bias.RMSEG = sqrt(mean((raw_force_gromit - repmat(bias.Gromit,numel(raw_force_gromit(:,1)),1)).^2));
-if sum(bias.RMSEG>[.15 .15 .3 .1 .1 .1])>0 
-    disp('Warning: Gromit error signal above normal. Check wiring/ grounding.')
-end
+% if sum(bias.RMSEW>[.15 .15 .3 .1 .1 .1])>0 
+%         disp(bias.RMSEW);
+%     disp('Warning: Wallace error signal above normal. Check wiring/ grounding.')
+% end
+% if sum(bias.RMSEG>[.15 .15 .3 .1 .1 .1])>0 
+%     disp('Warning: Gromit error signal above normal. Check wiring/ grounding.')
+% end
 
 Percent_fullrange_error = bias.RMSEW./[660 660 1980 60 60 60]*100;
 Percent_fullrange_errorG = bias.RMSEG./[660 660 1980 60 60 60]*100;

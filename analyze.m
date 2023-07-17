@@ -1,7 +1,7 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'D:\Experiments\2foil\SmallFoilAndVib_3';
+datadir = 'D:\Experiments\2foil\SmallFoilAndVib_pitch1=20deg,heave1=0.5c';
 thcknss = 0.0265; span_foil =0.365;%chord_foil = 0.06; %cross
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
@@ -30,7 +30,8 @@ createGIF = 1;
 %% Find the data files
 dir_fullname = [datadir,'\data\'];
 trialfiles = dir([dir_fullname,'*.mat']);
-trialfiles=trialfiles(~contains({trialfiles.name},'bias'));  
+trialfiles=trialfiles(~contains({trialfiles.name},'bias')); 
+trialfiles=natsortfiles(trialfiles);
 numtrials = length(trialfiles);
 % 
 % % % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
@@ -62,31 +63,36 @@ numtrials = length(trialfiles);
 
 
 %% Define the necessary variables in order to pre-allocate memory
-f_star_commanded_W = nan(numtrials);
-A_star_commanded_W = nan(numtrials);
-A_star_measured_W = nan(numtrials);
-phase12 = nan(numtrials);
-flowspeed_measured_mean = nan(numtrials);
-flowspeed_measured_stdev = nan(numtrials);
-power_mean = nan(numtrials);
-powercoef_mean = nan(numtrials);
-power_scale = nan(numtrials);
-flowspeed_measured_p2p = nan(numtrials);
-f_force_filtered_dom = nan(numtrials);
-force_scale_W = nan(numtrials);
-force_scale_G = nan(numtrials);
-delay = nan(numtrials);
-num_forcespecpeaks = nan(numtrials);
-liftcoef_alltrials_G = nan(numtrials);
-dragcoef_alltrials_G = nan(numtrials);
-inertialload_alltrials = nan(numtrials);
-torqueLD_scale_G = nan(numtrials);
-torquez_scale_G = nan(numtrials);
-torqueLD_scale_W = nan(numtrials);
-torquez_scale_W = nan(numtrials);
-%% Loop through trials with different flow speed U
-% Loop through subtrials with different heave amplitude A
-for trial_index = 1:numtrials
+f_star_commanded_W = nan(numtrials,1);
+A_star_commanded_W = nan(numtrials,1);
+A_star_measured_W = nan(numtrials,1);
+phase12 = nan(numtrials,1);
+flowspeed_measured_mean = nan(numtrials,1);
+flowspeed_measured_stdev = nan(numtrials,1);
+power_mean = nan(numtrials,1);
+powercoef_mean = nan(numtrials,1);
+power_scale = nan(numtrials,1);
+flowspeed_measured_p2p = nan(numtrials,1);
+f_force_filtered_dom = nan(numtrials,1);
+force_scale_W = nan(numtrials,1);
+force_scale_G = nan(numtrials,1);
+delay = nan(numtrials,1);
+num_forcespecpeaks = nan(numtrials,1);
+liftcoef_alltrials_G = nan(numtrials,1);
+dragcoef_alltrials_G = nan(numtrials,1);
+inertialload_alltrials = nan(numtrials,1);
+torqueLD_scale_G = nan(numtrials,1);
+torquez_scale_G = nan(numtrials,1);
+torqueLD_scale_W = nan(numtrials,1);
+torquez_scale_W = nan(numtrials,1);
+%% Loop through trials
+
+firsttrial = 1;
+if manytrial_analysis == 0
+    firsttrial = 420;
+    numtrials = firsttrial;
+end
+for trial_index = firsttrial:numtrials
 
 %% Load the requested trial data
 %     if varyphase==0
@@ -116,6 +122,7 @@ for trial_index = 1:numtrials
     catch
         disp(['Failed to load ',trialname])
     end
+
 %% Extract measured quantities
     % Define timesteps for each subtrial, excluding ramp up/down
     timesteps = length(out);
@@ -174,10 +181,10 @@ for trial_index = 1:numtrials
     A_star_commanded_W(trial_index) = (max(heave_commanded_W)-min(heave_commanded_W))/(2*thcknss);
     A_star_measured_W(trial_index) = (max(heave_measured_W)-min(heave_measured_W))/(2*thcknss);
 %% Filter force data
-    force_L_W_corrected = force_L_W+inertialload_y_G;
+    force_L_G_corrected = force_L_G+inertialload_y_G;
     [b,a] = butter(6,10*freq*(2*T),'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
-    force_L_G_corrected_filtered = filtfilt(b,a,squeeze(force_L_G));
-    force_L_W_corrected_filtered = filtfilt(b,a,squeeze(force_L_W_corrected)); 
+    force_L_G_corrected_filtered = filtfilt(b,a,squeeze(force_L_G_corrected));
+    force_L_W_corrected_filtered = filtfilt(b,a,squeeze(force_L_W)); 
     force_D_G_filtered = filtfilt(b,a,squeeze(force_D_G));
     force_D_W_filtered = filtfilt(b,a,squeeze(force_D_W));
     torque_D_G_filtered = filtfilt(b,a,squeeze(torque_D_G));
@@ -212,7 +219,7 @@ for trial_index = 1:numtrials
     power_mean(trial_index) = mean(power_fluid);
     powercoef = power_fluid/power_scale(trial_index);
     powercoef_mean(trial_index) = power_mean(trial_index)/power_scale(trial_index);
-
+    
 %% heave spectrum
     duration = max(time_star/freq)/T;
     window_duration = round(duration/2); % size of hilbert windows measured in samples
@@ -226,7 +233,7 @@ for trial_index = 1:numtrials
  % force corrected+filtered spectrum using Welch's method
     duration = round(max(time_star/freq)/T);
     window_duration = round(duration/2); % size of hilbert windows measured in samples
-    overlap = round(window_duration*7/8);
+    overlap = round(window_duration*1/2);
     force_hilbert =  hilbert(liftcoef_W);
     [force_powerspec,f_force] = pwelch(force_hilbert,window_duration,overlap,[],1/T);
     [max_force_power,max_force_index] = max(10*log10(force_powerspec));
@@ -262,9 +269,8 @@ for trial_index = 1:numtrials
 %     num_forcespecpeaks = size(forcespec_peaklocs,1);
 
 %% Plot power spectrum
-% St = 0.21; % estimated Strouhal number
-% f_vortex = St*(flowspeed_measured_mean(trial_index)/chord);
-% plot_PrescribedMotionPowerSpectrum_MATLABin(freq,f_vortex,f_heave_dom,f_heave,heave_powerspec,f_force,force_powerspec)
+plotTitle = ['Vibrissa behind foil phase diff ',num2str(phase,3),'deg and +/-',num2str(heave2/thcknss,2),'chord'];
+plot_PrescribedMotionPowerSpectrum_MATLABin
 
 %% Plot force and motion
     if singletrial_analysis==1
@@ -274,12 +280,12 @@ for trial_index = 1:numtrials
 %     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(trial_index))]);pause(5)
     
 % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Flapping foil +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
-    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
-        titlePlots);
+%     titlePlots = ['Vibrissa behind foil +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+%     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+%         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+%         titlePlots);
 % % Plot lift and drag coefficients and heave position for Wallace
-%     titlePlots = ['Flapping foil +/-',num2str(pitch2),'deg and +/-',num2str(heave2/thcknss),'thickness'];
+%     titlePlots = ['Vibrissa behind foil +/-',num2str(pitch2),'deg and +/-',num2str(heave2/thcknss),'thickness'];
 %     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
 %         dragcoef_W,power_fluid,torqueliftcoef_W,torquedragcoef_W,torquezcoef_W,num_cyc,...
 %         titlePlots);
@@ -295,7 +301,10 @@ for trial_index = 1:numtrials
 %     idx = ftrial+(Atrial-1)*ftrials;
     im{trial_index} = frame2im(frame);
     end
-
+    
+    if manytrial_analysis == 1 % close figures after loading for many trial analysis
+    close all
+    end
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
 %         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
@@ -316,37 +325,45 @@ if createGIF == 1
     close all
 end
 %% Plot Power coefficient contour
+% plot_PowerCoefContour_vsphasediffandampl
+
 % Plot vs phase
 % f_star_sorted = f_star_commanded;
 % U_star_sorted = 1./f_star_sorted;
 % Repeat the first row because data is periodic -180deg = 180deg
+
 % phase12_sorted = [phase12;-phase12(1,:)];
 % A_star_sorted = [A_star_measured;A_star_measured(1,:)];
 % powercoef_mean_sorted = [powercoef_mean;powercoef_mean(1,:)];
 
+
+if manytrial_analysis==1
 % Plot acceleration limit
-% acc_limit = 4.9; % Acceleration limit in m/s^2
-% v_limit = 0.5;
-% 
-% hold on
-% % Plot Cp vs. A* and phase12
-% contourf(phase12,A_star_measured_W,powercoef_mean,120,'LineStyle','none')
-% caxis([-1 0.6])
-% colormap(bluewhitered)
-% 
-% contour(phase12,A_star_measured_W,powercoef_mean,[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
-% scatter(phase12,A_star_measured_W,60,'.','k')
-% grid on
-% xlabel('Phase between foil and vibrissa (degrees)')
-% ylabel('{\it A} * = {\it A/d}')
-% xlim([-190 180])
-% ylim([-0.04 1.12])
-% set(gca, 'Layer', 'top')
-% grid off
-% 
-% c=colorbar();
-% c.Label.String = '{\it C}_P';
-% % c.Label.Interpreter = 'Latex';
-% set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
-% 
-% hold off
+acc_limit = 4.9; % Acceleration limit in m/s^2
+v_limit = 0.5;
+
+figure
+hold on
+% Plot Cp vs. A* and phase12
+powercoef_mean_reshape = reshape(powercoef_mean,length(phase_vec),length(H2star_vec));
+contourf(phase_vec,H2star_vec,powercoef_mean_reshape',120,'LineStyle','none')
+clim([-1 0.2])
+colormap(bluewhitered)
+
+contour(phase_vec,H2star_vec,powercoef_mean_reshape',[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
+% scatter(phase_vec,H2star_vec,60,'.','k')
+grid on
+xlabel('Phase between foil and vibrissa (degrees)')
+ylabel('{\it A} * = {\it A/d}')
+xlim([-190 180])
+ylim([-0.04 1.12])
+set(gca, 'Layer', 'top')
+grid off
+
+c=colorbar();
+c.Label.String = '{\it C}_P';
+% c.Label.Interpreter = 'Latex';
+set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
+
+hold off
+end
