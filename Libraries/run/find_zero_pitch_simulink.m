@@ -1,11 +1,7 @@
 %% Find zero pitch simulink
-
-% function bias = find_zero_pitch_simulink(experiment, bias, traverse)
-
-stndby = 20;
-
 offset_home = experiment.offset_home;
 
+% Define relevant I/O channels depending on which traverse is being zeroed
 switch traverse
     case 'g' % leading traverse (Gromit)
         fy_index = 18; % index of the perpendicular (to the streamwise direction) transducer force channel
@@ -32,7 +28,7 @@ while repeat_alignment == 1
     %% Generate profiles
     % for initial search:
     scan_time = 5;
-    search_amplitude = 2;
+    search_amplitude = 5;
     expand_search = 0;
 
     while expand_search < 2
@@ -89,29 +85,21 @@ while repeat_alignment == 1
         Ty_neg = out(range_neg,mz_index);
         pitch_neg = out(range_neg,prof_index);
     
-        b_Vtheta_pos = pitch_pos(1);
-        a_Vtheta_pos = (pitch_pos(end)-b_Vtheta_pos)/(scan_time*experiment.srate);
+        b_rad_pos = pitch_pos(1);
+        a_rad_pos = (pitch_pos(end)-b_rad_pos)/(scan_time*experiment.srate);
     
-        b_Vtheta_neg = pitch_neg(1);
-        a_Vtheta_neg = (pitch_neg(end)-b_Vtheta_neg)/(scan_time*experiment.srate);
+        b_rad_neg = pitch_neg(1);
+        a_rad_neg = (pitch_neg(end)-b_rad_neg)/(scan_time*experiment.srate);
     
         %% Linear fits on curves
     
-        coefL1_pos = polyfit(1:numel(Fy_pos), smooth(Fy_pos,100)', 1);
-        aL_pos = coefL1_pos(1);
-        bL_pos = coefL1_pos(2);
+        FyCoef_pos = polyfit(1:numel(Fy_pos), smooth(Fy_pos,100)', 1);
+        aL_pos = FyCoef_pos(1);
+        bL_pos = FyCoef_pos(2);
     
-        coefL1_neg = polyfit(1:numel(Fy_neg), smooth(Fy_neg,100)', 1);
-        aL_neg = coefL1_neg(1);
-        bL_neg = coefL1_neg(2);
-    
-        figure;
-%         plot(1:numel(pitch_pos), pitch_pos, 1:numel(Fy_pos), smooth(Fy_pos,100), 1:numel(Fy_pos), aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
-%         plot(1:numel(pitch_neg), pitch_neg, 1:numel(Fy_neg), smooth(Fy_neg,100), 1:numel(Fy_neg), aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
-%         legend('Pitch negative','Fy smoothed','Linear fit','Pitch positive','Fy smoothed','Linear fit');
-        plot(pitch_pos, Fy_pos,pitch_pos, aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
-        plot(pitch_neg, Fy_neg,pitch_neg, aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
-        legend('Fy smoothed','Linear fit','Fy smoothed','Linear fit')
+        FyCoef_neg = polyfit(1:numel(Fy_neg), smooth(Fy_neg,100)', 1);
+        aL_neg = FyCoef_neg(1);
+        bL_neg = FyCoef_neg(2);
     
         %% Expanding search
     
@@ -132,12 +120,25 @@ while repeat_alignment == 1
 
     %% Calculate the average pitch bias
 
-    pitch_bias_pos = a_Vtheta_pos*(-bL_pos/aL_pos) + b_Vtheta_pos;
-    pitch_bias_neg = a_Vtheta_neg*(-bL_neg/aL_neg) + b_Vtheta_neg;
-    new_bias = mean([pitch_bias_pos, pitch_bias_neg]);
+    pitch_bias_pos = a_rad_pos*(-bL_pos/aL_pos) + b_rad_pos;
+    pitch_bias_neg = a_rad_neg*(-bL_neg/aL_neg) + b_rad_neg;
+    new_bias = rad2deg(mean([pitch_bias_pos, pitch_bias_neg]));
 
     disp(['Pitch Bias [deg]: ', num2str(new_bias)])
 
+%% Plot the results
+        figure;
+%         plot(1:numel(pitch_pos), pitch_pos, 1:numel(Fy_pos), smooth(Fy_pos,100), 1:numel(Fy_pos), aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
+%         plot(1:numel(pitch_neg), pitch_neg, 1:numel(Fy_neg), smooth(Fy_neg,100), 1:numel(Fy_neg), aL_neg*(1:numel(Fy_neg))+bL_neg); hold off;
+%         legend('Pitch negative','Fy smoothed','Linear fit','Pitch positive','Fy smoothed','Linear fit');
+        plot(rad2deg(pitch_pos), Fy_pos,rad2deg(pitch_pos), aL_pos*(1:numel(Fy_pos))+bL_pos); hold on;
+        plot(rad2deg(pitch_neg), Fy_neg,rad2deg(pitch_neg), aL_neg*(1:numel(Fy_neg))+bL_neg); 
+        plot([new_bias new_bias],[-1 1],'LineStyle','--','Color','red'); hold off;
+        legend('Fy smoothed','Linear fit','Fy smoothed','Linear fit')
+        xlabel('Pitch (degrees)')
+        ylabel('Force along y-axis of force sensor')
+    
+    %% Ask the user if they would like to repeat find zero pitch for other traverse
 %     pitch_check = input(['Does this look alright to you? y/n + Enter', newline],"s");
     % bypass input
     pitch_check = 'y';
@@ -153,6 +154,7 @@ while repeat_alignment == 1
             break; % terminate while loop
         end
     end
+
 
 end % repeat alignment search
 

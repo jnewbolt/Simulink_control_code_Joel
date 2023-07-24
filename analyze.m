@@ -1,8 +1,9 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'D:\Experiments\2foil\SmallFoilAndVib_pitch1=20deg,heave1=0.5c';
-thcknss = 0.0265; span_foil =0.365;%chord_foil = 0.06; %cross
+datadir = 'D:\Experiments\2foil\SmallFoilAndEllipCyl_pitch1=10deg,heave1=0.5c';
+thcknss = 0.0238; span_foil =0.365;%chord_foil = 0.06; %cross
+%% Some alternate important data locations:
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
 % trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
@@ -11,7 +12,6 @@ thcknss = 0.0265; span_foil =0.365;%chord_foil = 0.06; %cross
 % thcknss = 0.054; chord_foil = 0.075; span_foil =0.45;%cross-stream diameter in meters % Is this necessary? Try to remove
 % trialdir = 'FoilSymmetryTestSmallFoil\data\'; namepart1 = '20230620_PrescribedMotion_p1='; namepart2 = 'deg_h1='; namepart3 = 'cm_ph=0deg';
 % thcknss = 0.054; %chord_foil = 0.06; span_foil =0.365;%cross-stream diameter in meters % Is this necessary? Try to remove
-%% Some alternate important data locations:
 % trialdir = 'vib50xBeem\data\'; namepart1 = 'vib_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'CircCyl_20220919\data\'; namepart1 = 'CylPowerMap_pitch=0deg,f='; namepart2='Hz,A=';
 % trialdir = 'EllipticalCyl_04-Jul-2022_16_7_4\data\'; namepart1 = 'EllipticalCyl_pitch=0deg,f='; namepart2='Hz,A=';
@@ -25,6 +25,13 @@ singletrial_analysis = 1;
 manytrial_analysis = 1;
 varyphase = 1;
 varypitch1 = 0;
+
+createplotForcesVsTimeG = 0;
+createplotForcesVsTimeW = 1;
+createplotForcesVsDisplacementsG = 0;
+createplotForcesVsDisplacementsW = 0;
+createplotForceSpectrum = 0;
+createplotEnergyMap = 0;
 createGIF = 1;
 
 %% Find the data files
@@ -85,11 +92,12 @@ torqueLD_scale_G = nan(numtrials,1);
 torquez_scale_G = nan(numtrials,1);
 torqueLD_scale_W = nan(numtrials,1);
 torquez_scale_W = nan(numtrials,1);
+gif_index = 1;
 %% Loop through trials
 
 firsttrial = 1;
 if manytrial_analysis == 0
-    firsttrial = 420;
+    firsttrial = 1;
     numtrials = firsttrial;
 end
 for trial_index = firsttrial:numtrials
@@ -118,7 +126,8 @@ for trial_index = firsttrial:numtrials
 
     try
 %         load(trialname,'transient_cycs','out','profs','freq','phase')
-        load([dir_fullname,trialfiles(trial_index).name]);
+        trialname=[dir_fullname,trialfiles(trial_index).name];
+        load(trialname);
     catch
         disp(['Failed to load ',trialname])
     end
@@ -137,11 +146,11 @@ for trial_index = firsttrial:numtrials
     pitch_commanded_G = outp1.Data;
     pitch_commanded_W = outp2.Data;
     heave_measured_G = out(timestep_start:timestep_end,2);
-    heave_measured_W = out(timestep_start:timestep_end,4);
+    heave_measured_W = out(timestep_start:timestep_end,4)-mean(out(timestep_start:timestep_end,4));
     heave_star_measured_G = heave_measured_G/chord_foil; % Compared to thin Aluminum foil chord of 7.5cm
     heave_star_measured_W = heave_measured_W/thcknss;
     pitch_measured_G = -1*out(timestep_start:timestep_end,1);
-    pitch_measured_W = -1*out(timestep_start:timestep_end,3);
+    pitch_measured_W = -1*(out(timestep_start:timestep_end,3)-mean(out(timestep_start:timestep_end,3)));
     force_x0_W = out(timestep_start:timestep_end,7);
     force_y0_W = out(timestep_start:timestep_end,8);
     force_z0_W = out(timestep_start:timestep_end,9);
@@ -181,7 +190,7 @@ for trial_index = firsttrial:numtrials
     A_star_commanded_W(trial_index) = (max(heave_commanded_W)-min(heave_commanded_W))/(2*thcknss);
     A_star_measured_W(trial_index) = (max(heave_measured_W)-min(heave_measured_W))/(2*thcknss);
 %% Filter force data
-    force_L_G_corrected = force_L_G+inertialload_y_G;
+    force_L_G_corrected = force_L_G;%+inertialload_y_G;
     [b,a] = butter(6,10*freq*(2*T),'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
     force_L_G_corrected_filtered = filtfilt(b,a,squeeze(force_L_G_corrected));
     force_L_W_corrected_filtered = filtfilt(b,a,squeeze(force_L_W)); 
@@ -193,6 +202,7 @@ for trial_index = firsttrial:numtrials
     torque_L_W_filtered = filtfilt(b,a,squeeze(torque_L_W));
     torque_z_G_filtered = filtfilt(b,a,squeeze(torque_z0_G));
     torque_z_W_filtered = filtfilt(b,a,squeeze(torque_z0_W));
+    inertialload_y_G_filtered = filtfilt(b,a,squeeze(inertialload_y_G));
     %% Nondimnesionalize forces and torques using characteristic scales
     force_scale_G(trial_index) = 0.5*1000*chord_foil*span_foil*flowspeed_measured_mean(trial_index)^2; % for 7.5cm chord foil with 45 cm span
     force_scale_W(trial_index) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(trial_index)^2;
@@ -234,12 +244,12 @@ for trial_index = firsttrial:numtrials
     duration = round(max(time_star/freq)/T);
     window_duration = round(duration/2); % size of hilbert windows measured in samples
     overlap = round(window_duration*1/2);
-    force_hilbert =  hilbert(liftcoef_W);
-    [force_powerspec,f_force] = pwelch(force_hilbert,window_duration,overlap,[],1/T);
+    force_hilbert =  hilbert(liftcoef_G);%hilbert(liftcoef_G);
+    [force_powerspec,f_force] = pwelch(force_hilbert,hanning(window_duration),overlap,[],1/T);
     [max_force_power,max_force_index] = max(10*log10(force_powerspec));
     f_force_dom = f_force(max_force_index);  
 %     spacing = (f_force(2)-f_force(1))/f;
-%     findpeaks(10*log10(force_powerspec),1/spacing,'MinPeakHeight',max_power-20)
+%     findpeaks(10*log10(force_powerspec1/spacing,'MinPeakHeight',max_power-20)
 
 % %     % Find phase delay between heave and force
 % %     maxlag = round(1/(2*freq*T));  % Maximum lag to calculate xcorr (in timesteps)
@@ -269,37 +279,50 @@ for trial_index = firsttrial:numtrials
 %     num_forcespecpeaks = size(forcespec_peaklocs,1);
 
 %% Plot power spectrum
+if createplotForceSpectrum == 1
 plotTitle = ['Vibrissa behind foil phase diff ',num2str(phase,3),'deg and +/-',num2str(heave2/thcknss,2),'chord'];
 plot_PrescribedMotionPowerSpectrum_MATLABin
-
+end
 %% Plot force and motion
-    if singletrial_analysis==1
-        % Plot lift and drag coefficients and heave position for Wallace
-%     plotForceAndPosition(time_star,heave_star_measured_W,heave_velo,liftcoef_W,...
-%         dragcoef_W,power_fluid,num_cyc,dragtorquecoef_W,'Vibrissa in wake'); 
-%     disp(['Phase diff ',num2str(phase),' Avg Power coef ', num2str(powercoef_mean(trial_index))]);pause(5)
-    
-% Plot lift and drag coefficients and heave position for Gromit
-%     titlePlots = ['Vibrissa behind foil +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
-%     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-%         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
-%         titlePlots);
-% % Plot lift and drag coefficients and heave position for Wallace
-%     titlePlots = ['Vibrissa behind foil +/-',num2str(pitch2),'deg and +/-',num2str(heave2/thcknss),'thickness'];
-%     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
-%         dragcoef_W,power_fluid,torqueliftcoef_W,torquedragcoef_W,torquezcoef_W,num_cyc,...
-%         titlePlots);
+if (mod(trial_index,1)==0 && trial_index>6*length(phase_vec)+1 && ...
+         trial_index<7*length(phase_vec)+1 && singletrial_analysis==1) || ...
+         createGIF == 0 % only plot every Nth figure
 
-%     plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-%         torquezcoef_G,titlePlots)
+    if createplotForcesVsTimeG == 1
+% Plot lift and drag coefficients and heave position for Gromit
+    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+        titlePlots);
+    end
+    if createplotForcesVsTimeW==1
+% Plot lift and drag coefficients and heave position for Wallace
+    titlePlots = ['Ell. cyl. behind foil phase diff ',num2str(phase,3),'deg and +/-',num2str(heave2/thcknss,2),'chord'];
+   plotForceTorqueDisplacementVsTime(time_star,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
+        dragcoef_W,power_fluid,torqueliftcoef_W,torquedragcoef_W,torquezcoef_W,num_cyc,...
+        titlePlots);
+    end
+% Plot lift and drag coefficients vs heave and angular position for Gromit
+    if createplotForcesVsDisplacementsG==1
+    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
+        torquezcoef_G,titlePlots)
+    end
+    if createplotForcesVsDisplacementsW==1
+            titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+                    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
+        torquezcoef_W,titlePlots)
+    end
+
     if createGIF == 1
     % Make a gif
+
     drawnow
     fig = gcf;
     frame = getframe(fig);
-%     idx = Atrial+(ftrial-1)*Atrials;
-%     idx = ftrial+(Atrial-1)*ftrials;
-    im{trial_index} = frame2im(frame);
+        
+    im{gif_index} = frame2im(frame);
+    gif_index = gif_index+1;
     end
     
     if manytrial_analysis == 1 % close figures after loading for many trial analysis
@@ -337,7 +360,7 @@ end
 % powercoef_mean_sorted = [powercoef_mean;powercoef_mean(1,:)];
 
 
-if manytrial_analysis==1
+if createplotEnergyMap ==1
 % Plot acceleration limit
 acc_limit = 4.9; % Acceleration limit in m/s^2
 v_limit = 0.5;
@@ -363,6 +386,8 @@ grid off
 c=colorbar();
 c.Label.String = '{\it C}_P';
 % c.Label.Interpreter = 'Latex';
+plotTitle = ['Ell. cyl. behind foil, foil pitch +/-',num2str(pitch1,3),'deg and +/-',num2str(heave1/chord_foil,2),'chord'];
+title(plotTitle);
 set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
 
 hold off

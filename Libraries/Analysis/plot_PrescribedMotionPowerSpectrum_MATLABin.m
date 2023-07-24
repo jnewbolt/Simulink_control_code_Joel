@@ -39,8 +39,8 @@
 %     scatter(forcespec_peaklocs,forcespec_peakpowers,'Marker','o');
     xlabel('Frequency (f/f_{prescribed})')
     ylabel('Force PSD (dB/Hz)')
-    xlim([0 10]) 
-    ylim([-40 20])
+    xlim([0 20]) 
+    ylim([-80 20])
     xticks(linspace(0,10,11))
     title(plotTitle)
 %     title(['CPS ring down, simulated: m = ',num2str(M),' kg, f_{natural} = ',num2str(f_nat),' Hz, \zeta = ',num2str(zeta)]);

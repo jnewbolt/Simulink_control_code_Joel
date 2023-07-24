@@ -19,14 +19,14 @@ transient_cycs = 3;
 % freq = 0.65; % very close ~0.649
 
 % non-dim parameters
-P1star_vec = 20; %(0:10:30); %,60,80]; % pitch amplitude in degrees
-H1star_vec = 0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
+P1star_vec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
+H1star_vec = 0;%0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
 chord_foil = 0.06; % chord length of upstream foil in meters
 P2star_vec = 0; %70; % 65,75
-H2star_vec = (0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+H2star_vec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initial_phase = -180; 
 phase_step = 20; % phase change between trials
-phase_vec = (initial_phase:phase_step:180);
+phase_vec = -180;%(initial_phase:phase_step:180);
 
 num_trials = length(P1star_vec)*length(H1star_vec)*length(P2star_vec)*length(H2star_vec)*length(phase_vec);
 trial_number = 1;
@@ -55,7 +55,7 @@ for H1star = H1star_vec
 %                 heave1 = H1star*foil.chord;
                 heave1 = H1star*chord_foil;%0.024*2.0362; % heave of upstream foil in meters
                 pitch2 = P2star;
-                heave2 = H2star*0.0265; % manual value of cross-stream thickness D for vibrissa
+                heave2 = H2star*0.0238; % manual value of cross-stream thickness D for ELLIPTICAL CYLINDER
                 
 %                 freq = fred*U/foil.chord;
                 freq = 0.8889; % Frequency in cycles/sec
