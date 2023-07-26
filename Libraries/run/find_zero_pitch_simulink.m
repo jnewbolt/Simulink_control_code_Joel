@@ -31,7 +31,7 @@ while repeat_alignment == 1
     search_amplitude = 5;
     expand_search = 0;
 
-    while expand_search < 2
+    while expand_search < 1 %% <2 for expanding search ***
         expand_search = expand_search + 1;
 
         [toime, outp1, outh1, outp2, outh2, sync_sig] = alignment_profile(experiment, traverse, scan_time, search_amplitude, bias);
@@ -158,8 +158,32 @@ while repeat_alignment == 1
 
 end % repeat alignment search
 
-disp([traverse_name, ' alignment done.']);
+%% Plot force direction
+figure;
+pitch = out(range_pos,prof_index);
+forceTorqueGromit = out(range_pos,fy_index-1:fy_index+4);
+zerosVector = zeros(length(pitch),1);
+raw_force_gromit_labFrame_x = sum([cos(pitch) -sin(pitch)].*forceTorqueGromit(:,1:2),2);
+raw_force_gromit_labFrame_y = sum([sin(pitch) cos(pitch)].*forceTorqueGromit(:,1:2),2);
+raw_force_gromit_labFrame_z = forceTorqueGromit(:,3);
+raw_torque_gromit_labFrame_x = sum([cos(pitch) -sin(pitch)].*forceTorqueGromit(:,4:5),2);
+raw_torque_gromit_labFrame_y = sum([sin(pitch) cos(pitch)].*forceTorqueGromit(:,4:5),2);
+raw_torque_gromit_labFrame_z = forceTorqueGromit(:,6);
+hold on;
+plot(pitch,raw_force_gromit_labFrame_x,pitch,raw_force_gromit_labFrame_y,pitch,raw_force_gromit_labFrame_z)
+plot(pitch,raw_torque_gromit_labFrame_x,pitch,raw_torque_gromit_labFrame_y,pitch,raw_torque_gromit_labFrame_z)
+legend('Fx','Fy','Fz','Tx','Ty','Tz')
+ylabel('Forces and Torques')
+xlabel('Pitch ()')
+hold off;
 
+%% Save data
+folder_name = [experiment.fname,'\data'];
+numfiles = dir([folder_name,'\FindZeroPitch_',traverse_name,'*']);
+jj = numel(numfiles)+1;
+trialfilename = [folder_name,'\FindZeroPitch_',traverse_name,'_',num2str(jj)];
+save(trialfilename);
+disp([traverse_name, ' alignment done.']);
 
 %% In-routine functions
 
