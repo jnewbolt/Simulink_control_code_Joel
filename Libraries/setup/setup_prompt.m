@@ -61,11 +61,15 @@ else
 end
 
 % Prompt user for a new folder name if the previous folder already exists (overwrite protection)
-[status, msg, msgID] = mkdir(e.dataFolderName);
+[~, msg, ~] = mkdir(e.dataFolderName);
 while strcmp(msg,'Directory already exists.')
-    new_dir = input('Chosen directory name already exists!  Please type a new folder name below, then hit enter. \n',"s");
-    e.dataFolderName = ['D:\Experiments\',num2str(e.Number_of_foils),'foil\',new_dir];
-    [status, msg, msgID] = mkdir(e.dataFolderName);
+    newDataDir = input('Chosen directory name already exists!  Please type a new folder name below, then hit enter. \n',"s");
+    if e.save2LRS == 'y'
+        e.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
+    else
+        e.dataFolderName = ['D:\Experiments\Data\',newDataDir];
+    end
+    [~, msg, ~] = mkdir(e.dataFolderName);
 end
 folder_name = [e.dataFolderName,'\data'];
 mkdir(folder_name); % for the bias measurements
