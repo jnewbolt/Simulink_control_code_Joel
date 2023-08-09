@@ -4,7 +4,6 @@
 % -Take tare measurement for force sensors
 % -Find zero y-Force angles, aka find zero pitch
 % -Take loaded tare measurement (with steady flow on object)
-
 %% General setup
 setup_email() % sets up email to send out when experiment is finished
 experiment = setup_prompt(); % prompts user to input parameter values for the experiment
