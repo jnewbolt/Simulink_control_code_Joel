@@ -8,7 +8,7 @@
 setup_email() % sets up email to send out when experiment is finished
 experiment = setup_prompt(); % prompts user to input parameter values for the experiment
 foils = foils_database(experiment.firstFoilShape,experiment.secondFoilShape); % finds properties of the foils selected for the experiment
-
+% this is a note for a test commit
 % expected time delay between Gromit and Wallace (Gromit leading motion)
 experiment.motion_delay = 13;
 disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ',num2str(experiment.motion_delay),' ms']);
