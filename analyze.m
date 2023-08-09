@@ -1,7 +1,7 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'D:\Experiments\2foil\SmallFoilAndEllipCyl_pitch1=10deg,heave1=0.5c';
+datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\SmallFoilAndEllipCyl_pitch1=10deg,heave1=0.5c';
 thcknss = 0.0238; span_foil =0.365;%chord_foil = 0.06; %cross
 %% Some alternate important data locations:
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
@@ -22,24 +22,32 @@ thcknss = 0.0238; span_foil =0.365;%chord_foil = 0.06; %cross
 %%
 %% Type of analysis requested 
 singletrial_analysis = 1;
-manytrial_analysis = 1;
+manytrial_analysis = 0;
 varyphase = 1;
 varypitch1 = 0;
 
-createplotForcesVsTimeG = 0;
+createplotForcesVsTimeG = 1;
 createplotForcesVsTimeW = 1;
 createplotForcesVsDisplacementsG = 0;
 createplotForcesVsDisplacementsW = 0;
 createplotForceSpectrum = 0;
 createplotEnergyMap = 0;
-createGIF = 1;
+createGIF = 0;
+
+if manytrial_analysis == 0
+    firsttrial = 6*19+1+14-4;
+    numtrials = firsttrial;
+end
 
 %% Find the data files
 dir_fullname = [datadir,'\data\'];
 trialfiles = dir([dir_fullname,'*.mat']);
 trialfiles=trialfiles(~contains({trialfiles.name},'bias')); 
-trialfiles=natsortfiles(trialfiles);
+trialfiles = natsortfiles(trialfiles);
+if manytrial_analysis == 1
+firsttrial = 1;
 numtrials = length(trialfiles);
+end
 % 
 % % % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
 % trialfilename = [datadir,trialdir,namepart1];
@@ -95,11 +103,6 @@ torquez_scale_W = nan(numtrials,1);
 gif_index = 1;
 %% Loop through trials
 
-firsttrial = 1;
-if manytrial_analysis == 0
-    firsttrial = 1;
-    numtrials = firsttrial;
-end
 for trial_index = firsttrial:numtrials
 
 %% Load the requested trial data
@@ -290,14 +293,14 @@ if (mod(trial_index,1)==0 && trial_index>6*length(phase_vec)+1 && ...
 
     if createplotForcesVsTimeG == 1
 % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
+    titlePlots = ['Foil w/ heave amplitude ',num2str(heave1/chord_foil),'chord and pitch amplitude ',num2str(pitch1),'deg'];
     plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
         dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
         titlePlots);
     end
     if createplotForcesVsTimeW==1
 % Plot lift and drag coefficients and heave position for Wallace
-    titlePlots = ['Ell. cyl. behind foil phase diff ',num2str(phase,3),'deg and +/-',num2str(heave2/thcknss,2),'chord'];
+    titlePlots = ['Ell. cyl. downstream w/ heave amplitude ',num2str(heave2/thcknss,2),'thickness and phase diff ',num2str(phase,3),'deg'];
    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
         dragcoef_W,power_fluid,torqueliftcoef_W,torquedragcoef_W,torquezcoef_W,num_cyc,...
         titlePlots);

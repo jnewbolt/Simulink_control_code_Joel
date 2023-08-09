@@ -5,15 +5,10 @@
 % -Find zero y-Force angles, aka find zero pitch
 % -Take loaded tare measurement (with steady flow on object)
 
-setupEmail() % sets up email to send out when experiment is finished
-
 %% General setup
-
-srate = 1000;
-T = 1/srate;
-
-experiment = setupPrompt(srate);
-foil = foils_database(experiment.foil_shape);
+setup_email() % sets up email to send out when experiment is finished
+experiment = setup_prompt();
+foils = foils_database(experiment.firstFoilShape,experiment.secondFoilShape);
 
 % expected time delay between Gromit and Wallace (Gromit leading motion)
 experiment.motion_delay = 13;

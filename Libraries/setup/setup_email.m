@@ -1,4 +1,4 @@
-function setupEmail()
+function setup_email()
 %% Email setup
     from_address = 'breuerflume@gmail.com';
     pass = 'lfvxzaqmulqfaumi'; % email password is flumepass
