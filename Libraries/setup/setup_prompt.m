@@ -1,23 +1,23 @@
-function [experiment] = setup_prompt()
+function [ExperimentParameters] = setup_prompt()
 % default answers
-e.sampleRate = '1000';
-e.firstFoilShape = 'V1';
-e.secondFoilShape = 'None';
-e.flumeDepthMeters = '0.55';
-e.flumeHertz = '16.0';
-e.foilSeparationMeters = '0.242'; 
-e.firstFoilPitchOffsetDegrees = '0';
-e.firstFoilHeaveOffsetMeters = '0';
-e.secondFoilPitchOffsetDegrees = '181';
-e.secondFoilHeaveOffsetMeters = '0.23';
-e.temperatureCelsius = '22.77';
-e.pitchAxis = '0.5';
-e.pivFlag = 'n';
-e.filterFlag = 'n';
-e.experimentName = 'Enter descriptive name';
-e.save2LRS = 'y';
-e.wallDistanceLeftMeters = '0.4';
-e.wallDistanceRightMeters = '0.4';
+EP.sampleRate = '1000';
+EP.firstFoilShape = 'V1';
+EP.secondFoilShape = 'None';
+EP.flumeDepthMeters = '0.55';
+EP.flumeHertz = '16.0';
+EP.foilSeparationMeters = '0.242'; 
+EP.firstFoilPitchOffsetDegrees = '0';
+EP.firstFoilHeaveOffsetMeters = '0';
+EP.secondFoilPitchOffsetDegrees = '181';
+EP.secondFoilHeaveOffsetMeters = '0.23';
+EP.temperatureCelsius = '22.77';
+EP.pitchAxis = '0.5';
+EP.pivFlag = 'n';
+EP.filterFlag = 'n';
+EP.experimentName = 'Enter descriptive name';
+EP.save2LRS = 'y';
+EP.wallDistanceLeftMeters = '0.4';
+EP.wallDistanceRightMeters = '0.4';
 
 % generate prompt window
 prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string): ','Enter second foil shape (as string): ', ...
@@ -30,50 +30,53 @@ prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string)
 
 % input dialog window
 numLines = 1; 
-expCellArray = struct2cell(e);
+expCellArray = struct2cell(EP);
 answer = inputdlg(prompt, 'Experiment configuration', numLines, expCellArray);
 
 % store reponses
-e.sampleRate = str2double(answer{1});
-e.firstFoilShape = char(answer{2});
-e.secondFoilShape = char(answer{3});
-e.flumeDepthMeters = str2double(answer{4});
-e.flumeHertz = str2double(answer{5});
-e.foilSeparationMeters = str2double(answer{6});
-e.firstFoilPitchOffsetDegrees = str2double(answer{7});
-e.firstFoilHeaveOffsetMeters = str2double(answer{8});
-e.secondFoilPitchOffsetDegrees = str2double(answer{9});
-e.secondFoilHeaveOffsetMeters = str2double(answer{10});
-e.temperatureCelsius = str2double(answer{11});
-e.pitchAxis = str2double(answer{12});
-e.pivFlag = char(answer{13});
-e.filterFlag = char(answer{14});
-e.experimentName = char(answer{15});
-e.save2LRS = char(answer{16});
-e.wallDistanceLeftMeters = str2double(answer{17});
-e.wallDistanceRightMeters = str2double(answer{18});
+EP.sampleRate = str2double(answer{1});
+EP.firstFoilShape = char(answer{2});
+EP.secondFoilShape = char(answer{3});
+EP.flumeDepthMeters = str2double(answer{4});
+EP.flumeHertz = str2double(answer{5});
+EP.foilSeparationMeters = str2double(answer{6});
+EP.firstFoilPitchOffsetDegrees = str2double(answer{7});
+EP.firstFoilHeaveOffsetMeters = str2double(answer{8});
+EP.secondFoilPitchOffsetDegrees = str2double(answer{9});
+EP.secondFoilHeaveOffsetMeters = str2double(answer{10});
+EP.temperatureCelsius = str2double(answer{11});
+EP.pitchAxis = str2double(answer{12});
+EP.pivFlag = char(answer{13});
+EP.filterFlag = char(answer{14});
+EP.experimentName = char(answer{15});
+EP.save2LRS = char(answer{16});
+EP.wallDistanceLeftMeters = str2double(answer{17});
+EP.wallDistanceRightMeters = str2double(answer{18});
+
+ % finds properties of the foils selected for the experiment
+EP.Foils = foils_database(EP.firstFoilShape,EP.secondFoilShape);
 
 % establish save folder
-if e.save2LRS == 'y'
-    e.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',e.experimentName];
+if EP.save2LRS == 'y'
+    EP.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',EP.experimentName];
 else
-    e.dataFolderName = ['D:\Experiments\Data\',e.experimentName];
+    EP.dataFolderName = ['D:\Experiments\Data\',EP.experimentName];
 end
 
 % Prompt user for a new folder name if the previous folder already exists (overwrite protection)
-[~, msg, ~] = mkdir(e.dataFolderName);
+[~, msg, ~] = mkdir(EP.dataFolderName);
 while strcmp(msg,'Directory already exists.')
     newDataDir = input('Chosen directory name already exists!  Please type a new folder name below, then hit enter. \n',"s");
-    if e.save2LRS == 'y'
-        e.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
+    if EP.save2LRS == 'y'
+        EP.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
     else
-        e.dataFolderName = ['D:\Experiments\Data\',newDataDir];
+        EP.dataFolderName = ['D:\Experiments\Data\',newDataDir];
     end
-    [~, msg, ~] = mkdir(e.dataFolderName);
+    [~, msg, ~] = mkdir(EP.dataFolderName);
 end
-folder_name = [e.dataFolderName,'\data'];
+folder_name = [EP.dataFolderName,'\data'];
 mkdir(folder_name); % for the bias measurements
 
 % e.offset_home = [e.firstFoilPitchOffsetDegrees, e.firstFoilHeaveOffsetMeters, e.secondFoilPitchOffsetDegrees, e.secondFoilHeaveOffsetMeters];
-experiment = e;
+ExperimentParameters = EP;
 end

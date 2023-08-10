@@ -6,83 +6,74 @@
 % -Take loaded tare measurement (with steady flow on object)
 %% General setup
 setup_email() % sets up email to send out when experiment is finished
-experiment = setup_prompt(); % prompts user to input parameter values for the experiment
-foils = foils_database(experiment.firstFoilShape,experiment.secondFoilShape); % finds properties of the foils selected for the experiment
+ExperimentParameters = setup_prompt(); % prompts user to input parameter values for the experiment
 
 % expected time delay between Gromit and Wallace (Gromit leading motion)
-experiment.motion_delay = 13;
-disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ',num2str(experiment.motion_delay),' ms']);
-
+ExperimentParameters.motionDelay = 13;
+disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ', ...
+    num2str(ExperimentParameters.motionDelay),' ms']);
 %% Unloaded bias measurement
-
 % check for required parameters:
-if ~exist('experiment','var')
+if ~exist('ExperimentParameters','var')
     error('Missing necessary variables from workspace')
 end
 
 disp(['Finding unloaded bias. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
 pause()
 
-run("find_bias_simulink.m")
-
-clearvars -except experiment foil srate T out raw_encoders raw_wallace raw_gromit bias
+% Run find_bias_simulink.m script, then clear temporary variables from the workspace
+% This is not done with a function call so that the Simulink model can access workspace variables
+find_bias_simulink
+clearvars -except ExperimentParameters Measurements Biases
 
 %% Find zero pitch
 
-align_ans = input(['Run "find_zero_pitch" for Gromit? y/n + Enter',newline],"s");
-if strcmp(align_ans,'y')
-    % align gromit
+answer = questdlg('Run "find_zero_pitch" for Gromit?','Find zero pitch for Gromit traverse','Yes','No','No');
+switch answer
+    case 'Yes'
     traverse = 'g';
     disp('Ensure flume is at speed and Gromit is ON. Press any key to continue')
     pause
-
     % check for required parameters:
-    if ~exist('experiment','var') || ~exist('bias','var') || ~exist('traverse','var')
-        error('Missing necessary variables from workspace. Vars "experiment", "bias", and "traverse" must be available.')
+    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
     end
-    
-    run("find_zero_pitch_simulink.m")
-    
-    clearvars -except experiment foil srate T out raw_encoders raw_wallace raw_gromit bias
+% Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
+% This is not done with a function call so that the Simulink model can access workspace variables
+    find_zero_pitch_simulink
+    clearvars -except ExperimentParameters Biases Measurements
+
 end
 
-align_ans = input(['Run "find_zero_pitch" for Wallace? y/n + Enter',newline],"s");
-if strcmp(align_ans,'y')
-    % align wallace
+answer = questdlg('Run "find_zero_pitch" for Wallace?','Find zero pitch for Wallace traverse','Yes','No','No');
+switch answer
+    case 'Yes'
     traverse = 'w';
     disp('Ensure flume is at speed and Wallace is ON Press any key to continue')
     pause
-    
-    run("find_zero_pitch_simulink.m")
+    % check for required parameters:
+    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
+    end
+% Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
+% This is not done with a function call so that the Simulink model can access workspace variables
+    find_zero_pitch_simulink
+    clearvars -except ExperimentParameters Biases Measurements
 end
-
-% Assign aligned pitch bias to unloaded bias variable
-disp('Updating "bias_unloaded" with alignment.')
-% bias.pitch(1) = -0.0013; % temporary 20230713
-% bias.pitch(2) = 0.7192; % temporary 20230418
-bias_unloaded = bias;
-clearvars -except experiment foil srate T out raw_encoders raw_wallace raw_gromit bias bias_unloaded
-
+    clearvars -except ExperimentParameters Biases Measurements
 %% Loaded bias measurement
-
 % check for required parameters:
-if ~exist('experiment','var') || ~exist('bias_unloaded','var') || ~exist('bias','var')
-    % in this case, bias and bias_unloaded are the same, but "find_bias" uses the variable "bias" to run
-    error('Missing necessary variables from workspace. Vars "experiment", "bias", and "bias_unloaded" must be available.')
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
 end
 
-disp(['Finding loaded bias. Ensure flume is ON and motors are ON. Bring flowspeed up to experiment value.',newline,'Press any key to continue.'])
-pause
-run("find_bias_simulink.m")
+disp(['Finding loaded bias. Ensure flume is ON at speed and motors are ON.',newline,'Press any key to continue.'])
+pause()
 
-% Assign bias to loaded bias variable
-bias_loaded = bias;
-clearvars -except experiment foil srate T out raw_encoders raw_wallace raw_gromit bias bias_unloaded bias_loaded
+% Run find_bias_simulink.m script, then clear temporary variables from the workspace
+% This is not done with a function call so that the Simulink model can access workspace variables
+find_bias_simulink
+clearvars -except ExperimentParameters Measurements Biases
 
 %% Ready
-
 disp('Done initializing experimental setup.')
-
-% b = timeseries(1);
-% set_param('test_model','SimulationCommand','start');
-

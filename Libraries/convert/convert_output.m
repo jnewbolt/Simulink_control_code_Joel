@@ -1,10 +1,9 @@
-function out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit, raw_vectrino, raw_accelmeter, ref_signal, bias, range_x, offset_home)
-
+function M = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, ...
+    refSig, Biases, rangeTimes, EP)
 % % Required inputs:
 % raw_encoders
 % raw_wallace
 % raw_gromit
-
 % % Optional inputs:
 % bias
 % range_x
@@ -13,13 +12,13 @@ function out = convert_output(raw_encoders, raw_force_wallace, raw_force_gromit,
 
 %% Encoders
 
-if ~exist('range_x', 'var') || isempty(range_x)
-    range_x = 1:size(raw_encoders,1);
+if ~exist('rangeTimes', 'var') || isempty(rangeTimes)
+    rangeTimes = 1:size(rawEncoders,1);
 end
 
-if ~exist('bias','var') || isempty(bias)
-    bias.Wallace = 0;
-    bias.Gromit = 0;
+if ~exist('Biases','var') || isempty(Biases)
+    Biases.forceVoltsW = 0;
+    Biases.forceVoltsG = 0;
 end
 
 if ~exist('offset_home','var') || isempty(offset_home)
@@ -30,27 +29,30 @@ else
     offset_h2 = offset_home(4);
 end
 
-raw_encoders(raw_encoders(:,1:2)>1e6) = raw_encoders(raw_encoders(:,1:2)>1e6)-2^32;
+rawEncoders(rawEncoders(:,1:2)>1e6) = rawEncoders(rawEncoders(:,1:2)>1e6)-2^32;
 
-out(:,1) = raw_encoders(range_x,1).*2*pi/10000;
-out(:,2) = -raw_encoders(range_x,2).*0.0254/8000;
-out(:,3) = deg2rad(conv_encodertheta_traverse(raw_encoders(range_x,3), 0)) - deg2rad(offset_p2);
-out(:,4) = conv_encodery_traverse(raw_encoders(range_x,4), 0) - offset_h2;
+M.pitchDegreesG = rawEncoders(rangeTimes,1).*360/10000;
+M.heaveMetersG = -rawEncoders(rangeTimes,2).*0.0254/8000;
+M.pitchDegreesW = conv_encodertheta_traverse(rawEncoders(rangeTimes,3), 0) - EP.secondFoilPitchOffsetDegrees;
+M.heaveMetersW = conv_encodery_traverse(rawEncoders(rangeTimes,4), 0) - EP.secondFoilHeaveOffsetMeters;
 
-out(:,5) = ref_signal(range_x);
+% refSig = ref_signal(rangeTimes);
 
 %% Force transducers
 
-out(:,7:12) = conv_output_wallace_force(raw_force_wallace(range_x,:),bias.Wallace);
-out(:,17:22) = conv_output_gromit_force(raw_force_gromit(range_x,:),bias.Gromit);
+M.forcesNewtonsW = conv_output_wallace_force(rawForceVoltsW(rangeTimes,:),Biases.forceVoltsW);
+M.forcesNewtonsG = conv_output_gromit_force(rawForceVoltsG(rangeTimes,:),Biases.forceVoltsG);
 
 %% Vectrino
 
-out(:,13:16) = (raw_vectrino(range_x,:)-2.5)*2/5;
+M.flowMetersPerSecondVectrino = (rawVoltsVectrino(rangeTimes,:)-2.5)*2/5;
 
 %% Accelerometer
 
-out(:,23) = (0.6+0.306)*9.81*(raw_accelmeter(range_x,:)-bias.accmeter); % Mass of mount + mass of vibrissa*(m/s/s/Volt)*accmeter_voltage
+forceSensorMassKilograms = 0.6; % Mass of mount 
+accmeterMetersPerSecondSqPerVolt = 9.81; % Meters per seconds squared per volt
+M.forceInertialLoadG = (forceSensorMassKilograms+EP.Foils.firstFoil.mass)*accmeterMetersPerSecondSqPerVolt* ...
+    (rawVoltsAccelmeter(rangeTimes,:)-Biases.accmeterVolts); 
 
 end
 
