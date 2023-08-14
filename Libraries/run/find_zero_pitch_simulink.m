@@ -69,11 +69,11 @@ while repeatFindZeroPitchFlag == 1
                 pitch_neg = Measurements.pitchDegreesW(rangeNegSweep);
         end
     
-        b_rad_pos = pitch_pos(1);
-        a_rad_pos = (pitch_pos(end)-b_rad_pos)/(scanTime*ExperimentParameters.sampleRate);
+        startPitchDegPosSweep = pitch_pos(1);
+        slopeDegPosSweep = (pitch_pos(end)-startPitchDegPosSweep)/(scanTime*ExperimentParameters.sampleRate);
     
-        b_rad_neg = pitch_neg(1);
-        a_rad_neg = (pitch_neg(end)-b_rad_neg)/(scanTime*ExperimentParameters.sampleRate);
+        startPitchDegNegSweep = pitch_neg(1);
+        slopeDegNegSweep = (pitch_neg(end)-startPitchDegNegSweep)/(scanTime*ExperimentParameters.sampleRate);
     
         %% Linear fits on curves
         FyCoef_pos = polyfit(1:numel(Fy_pos), smooth(Fy_pos,100)', 1);
@@ -101,9 +101,9 @@ while repeatFindZeroPitchFlag == 1
     end % expand search end
 
     %% Calculate the average pitch bias
-    pitch_bias_pos = a_rad_pos*(-bL_pos/aL_pos) + b_rad_pos;
-    pitch_bias_neg = a_rad_neg*(-bL_neg/aL_neg) + b_rad_neg;
-    newPitchOffsetDeg = rad2deg(mean([pitch_bias_pos, pitch_bias_neg]));
+    pitchOffsetDegPosSweep = slopeDegPosSweep*(-bL_pos/aL_pos) + startPitchDegPosSweep;
+    pitchOffsetDegNegSweep = slopeDegNegSweep*(-bL_neg/aL_neg) + startPitchDegNegSweep;
+    newPitchOffsetDeg = mean([pitchOffsetDegPosSweep, pitchOffsetDegNegSweep]);
     disp(['Pitch offset (degrees): ', num2str(newPitchOffsetDeg)])
 
 %% Plot the results
