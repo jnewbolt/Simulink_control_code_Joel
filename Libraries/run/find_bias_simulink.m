@@ -8,10 +8,9 @@ sampleTime = 1/EP.sampleRate;
 %% Stationary command profiles
 % ramp to offset time
 rampTime = 5; % in [s]
-
 % Generate ramp profiles
-[~, rampPitchG, rampHeaveG] = ramp_fn(rampTime, EP, 'g');
-[~, rampPitchW, rampHeaveW] = ramp_fn(rampTime, EP, 'w');
+[~, rampPitchG, rampHeaveG] = ramp_fn(rampTime, EP, 'Gromit');
+[~, rampPitchW, rampHeaveW] = ramp_fn(rampTime, EP, 'Wallace');
 
 % Zero motion profile
 trajDuration = 20; % length of time of bias measurement in seconds
@@ -55,8 +54,10 @@ freq = 0; heave1 = 0;
 simStatus='stopped'; % Check if the model ran correctly
 while strcmp(simStatus,'stopped') 
     % clear variables in case done after an experiment
-    clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
-    
+%         clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
+        clear rawEncoderPitchCountsG rawEncoderHeaveCountsG rawEncoderPitchCountsW rawEncoderHeaveCountsW ...
+            rawForceVoltsW rawForceVoltsG   rawVoltsVectrino rawVoltsAccelmeter refSig
+   
 %     set_param('simulink_traverse_control','sampleTime',);
     set_param('simulink_traverse_control','SimulationCommand','start');
     simStatus = get_param('simulink_traverse_control','SimulationStatus');
@@ -162,11 +163,10 @@ numBiasFiles = numel(biasFiles);
 if numBiasFiles == 0
     filename = [dataFolderName,'\BiasesNoLoad'];
     BiasesNoLoad = Biases;
-    save(filename,'BiasesNoLoad','time','Measurements');
 else
     filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles)];
     BiasesLoaded = Biases;
-    save(filename,'BiasesLoaded','time','Measurements');
 end
+save(filename);
 
 % end

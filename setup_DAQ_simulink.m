@@ -27,11 +27,10 @@ find_bias_simulink
 clearvars -except ExperimentParameters Measurements Biases
 
 %% Find zero pitch
-
-answer = questdlg('Run "find_zero_pitch" for Gromit?','Find zero pitch for Gromit traverse','Yes','No','No');
+answer = input(['Run "find_zero_pitch" for Gromit? y/n + Enter', newline],"s");
 switch answer
-    case 'Yes'
-    traverse = 'g';
+    case 'y'
+    traverse = 'Gromit';
     disp('Ensure flume is at speed and Gromit is ON. Press any key to continue')
     pause
     % check for required parameters:
@@ -45,10 +44,10 @@ switch answer
 
 end
 
-answer = questdlg('Run "find_zero_pitch" for Wallace?','Find zero pitch for Wallace traverse','Yes','No','No');
+answer = input(['Run "find_zero_pitch" for Wallace?? y/n + Enter', newline],"s");
 switch answer
-    case 'Yes'
-    traverse = 'w';
+    case 'y'
+    traverse = 'Wallace';
     disp('Ensure flume is at speed and Wallace is ON Press any key to continue')
     pause
     % check for required parameters:

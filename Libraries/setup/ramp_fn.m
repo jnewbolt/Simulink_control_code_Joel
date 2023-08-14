@@ -2,10 +2,10 @@ function [t_ramp, ramp_p, ramp_h] = ramp_fn(rampTime, ExperimentParameters, trav
     % used by both traverses in order to ramp up and down from starting position to offset and bias
     EP = ExperimentParameters;
     switch traverse
-        case 'g'
+        case 'Gromit'
             offsetPitch = EP.firstFoilPitchOffsetDegrees;
             offsetHeave = EP.firstFoilHeaveOffsetMeters;
-        case 'w'
+        case 'Wallace'
             offsetPitch = EP.secondFoilPitchOffsetDegrees;
             offsetHeave = EP.secondFoilHeaveOffsetMeters;
     end
