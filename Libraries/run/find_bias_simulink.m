@@ -89,7 +89,6 @@ end
 disp('Done')
 
 %% Calculate force biases
-
 rangeTimes = find(refSig);
 rangeTimes = rangeTimes(1000:end);
 

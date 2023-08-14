@@ -1,5 +1,5 @@
 %% Find zero pitch simulink
-
+sampleTime = 1/ExperimentParameters.sampleRate;
 %% Alignment
 disp(['Aligning ',traverse, ' traverse.']);
 repeatFindZeroPitchFlag = 1;
@@ -46,14 +46,12 @@ while repeatFindZeroPitchFlag == 1
         disp('Done')
     
         %% Convert data
-    
+        rangeTimes = 1:length(rawEncoderPitchCountsG);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, EP);
+        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, ExperimentParameters);
 
         %% Extract relevant forces for analysis
-    
-        % inices of non-zero elements
-        k = find(refSig == 1);
+        k = find(refSig == 1); % inices of non-zero elements
         
         rangePosSweep = k(1):k(2); % range of positive angle sweep
         rangeNegSweep = k(3):k(4); % range of negative angle sweep
@@ -167,7 +165,7 @@ end % repeat alignment search
 %% Save bias into a subfolder within the active saving folder
 
 time = clock;
-dataFolderName = [EP.dataFolderName,'\data'];
+dataFolderName = [ExperimentParameters.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
 findZeroPitchFiles = dir([dataFolderName,'\FindZeroPitch*']);

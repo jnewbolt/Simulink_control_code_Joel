@@ -44,6 +44,7 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     profs(:,5) = [zeros(size(ramp_p1)); zeros(size(pprof1)); zeros(size(ramp_p1))];
     % mark the locations at which data will be extracted for alignment calculations:
     profs([stp1, stp1+stp2, stp1+stp2+stp3, stp1+stp2+stp3+stp4]+length(ramp_p1),5) = 1;
+
     
     % convert into time series to be output to simulink
     times = (0:size(profs,1)-1)'/EP.sampleRate; % time vector to create time series objects
