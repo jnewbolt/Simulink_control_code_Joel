@@ -18,6 +18,11 @@ EP.experimentName = 'Enter descriptive name';
 EP.save2LRS = 'y';
 EP.wallDistanceLeftMeters = '0.4';
 EP.wallDistanceRightMeters = '0.4';
+% expected time delay between Gromit and Wallace (Gromit leading motion)
+EP.pitchDelayW = 13;
+EP.heaveDelayW = 50; % phase difference between pitch wallace and heave wallace (heave lags behind pitch)
+disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ', ...
+    num2str(EP.pitchDelayW),' ms']);
 
 % generate prompt window
 prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string): ','Enter second foil shape (as string): ', ...
@@ -66,7 +71,9 @@ end
 % Prompt user for a new folder name if the previous folder already exists (overwrite protection)
 [~, msg, ~] = mkdir(EP.dataFolderName);
 while strcmp(msg,'Directory already exists.')
-    newDataDir = input('Chosen directory name already exists!  Please type a new folder name below, then hit enter. \n',"s");
+    disp('Tried to create data folder that already exitsts! Appending date and time to folder name.')
+    currDate = strrep(strrep(char(datetime), ':', '-'),' ','_');
+    newDataDir = [EP.experimentName,'_',currDate];
     if EP.save2LRS == 'y'
         EP.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
     else

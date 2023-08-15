@@ -8,11 +8,6 @@
 setup_email() % sets up email to send out when experiment is finished
 ExperimentParameters = setup_prompt(); % prompts user to input parameter values for the experiment
 
-% expected time delay between Gromit and Wallace (Gromit leading motion)
-ExperimentParameters.motionDelay = 13;
-disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ', ...
-    num2str(ExperimentParameters.motionDelay),' ms']);
-
 %% Move motors to starting position
 % check for required parameters:
 if ~exist('ExperimentParameters','var')
@@ -50,11 +45,11 @@ switch answer
     disp('Ensure flume is at speed and Gromit is ON. Press any key to continue')
     pause
     % check for required parameters:
-%     if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
-%         error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
-%     end
-% Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
+    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
+    end
 
+% Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
     clearvars -except ExperimentParameters Biases Measurements
 
@@ -67,9 +62,10 @@ switch answer
     disp('Ensure flume is at speed and Wallace is ON Press any key to continue')
     pause
     % check for required parameters:
-%     if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
-%         error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
-%     end
+    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
+    end
+    
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
     clearvars -except ExperimentParameters Biases Measurements

@@ -8,11 +8,6 @@ rampTime = 5; % ramp time in seconds
 [~, rampHeaveG] = ramp_fn(rampTime,startHeaveMetersG, endHeaveMetersG, EP.sampleRate);
 [~, rampPitchW] = ramp_fn(rampTime,startPitchDegW, endPitchDegW, EP.sampleRate);
 [rampTimesVector, rampHeaveW] = ramp_fn(rampTime,startHeaveMetersW, endHeaveMetersW, EP.sampleRate);
-% 
-% switch moveToPosition  
-%     case 'home'
-%     rampPitchG = flip(rampPitchG); rampHeaveG = flip(rampHeaveG); rampPitchW = flip(rampPitchW); rampHeaveW = flip(rampHeaveW);
-% end
 
 % plot trajectories
 plot_profiles(rampPitchG,rampHeaveG,rampPitchW,rampHeaveW);

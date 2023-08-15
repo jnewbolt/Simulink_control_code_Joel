@@ -13,8 +13,8 @@ while repeatFindZeroPitchFlag == 1
     while expandSearchFlag < 1 %% <2 for expanding search ***
         expandSearchFlag = expandSearchFlag + 1;
 
-        [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(ExperimentParameters, scanTime, pitchAmpDeg, traverse);
-    
+        [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = ...
+            trajectory_find_zero_pitch(ExperimentParameters, scanTime, pitchAmpDeg, traverse);
         % simulation time
         simTime = ceil(times(end))+2;
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
