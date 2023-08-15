@@ -6,34 +6,19 @@
 EP = ExperimentParameters; 
 sampleTime = 1/EP.sampleRate;
 %% Stationary command profiles
-% ramp to offset time
-rampTime = 5; % in [s]
-% Generate ramp profiles
-[~, rampPitchG, rampHeaveG] = ramp_fn(rampTime, EP, 'Gromit');
-[~, rampPitchW, rampHeaveW] = ramp_fn(rampTime, EP, 'Wallace');
-
 % Zero motion profile
 trajDuration = 20; % length of time of bias measurement in seconds
 trajStationary = zeros(trajDuration*EP.sampleRate,1);
-motionDelayTimesteps = EP.motionDelay*(1000/EP.sampleRate);
 
-clear profs % in case this scripts is run after a previous one
-% gromit pitch
-trajPitchDegreesG = [zeros(motionDelayTimesteps,1); rampPitchG; trajStationary+EP.firstFoilPitchOffsetDegrees; flip(rampPitchG)];
-% gromit heave
-trajHeaveMetersG = [zeros(motionDelayTimesteps,1); rampHeaveG; trajStationary+EP.firstFoilHeaveOffsetMeters; flip(rampHeaveG)];
-% wallace pitch
-trajPitchDegreesW = [rampPitchW; trajStationary+EP.secondFoilPitchOffsetDegrees; flip(rampPitchW); zeros(motionDelayTimesteps,1)];
-% wallace heave
-trajHeaveMetersW = [rampHeaveW; trajStationary+EP.secondFoilHeaveOffsetMeters; flip(rampHeaveW); zeros(motionDelayTimesteps,1)];
-
+trajPitchDegreesG = trajStationary+endPitchDegG;
+trajHeaveMetersG = trajStationary+endHeaveMetersG;
+trajPitchDegreesW = trajStationary+endPitchDegW;
+trajHeaveMetersW = trajStationary+endHeaveMetersW;
 % reference signal - has 0 for ramps and delays and 1 for usable data
-trajRefSig = [zeros(motionDelayTimesteps,1); zeros(size(rampPitchG)); ones(size(trajStationary)); zeros(size(rampPitchG))];
-% NOTE: the profile for sync_sig should be value 1 some time AFTER the ramp is finished,
-% and should go back to 0 some time BEFORE the 0 profile ends.
+trajRefSig = ones(size(trajStationary));
 
 % plot trajectories
-%     plot_profiles(profs);
+plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
 
 % convert into time series to be output to simulink
 times = (0:length(trajPitchDegreesG)-1)'/EP.sampleRate; % time vector to create time series objects
@@ -75,16 +60,6 @@ while strcmp(simStatus,'stopped')
             end
     end
 end
-%     sim_status = 'running';
-%     while ~strcmp(sim_status,'stopped')
-%         sim_status = get_param('simulink_traverse_control','SimulationStatus');
-%         pause(5);
-%         disp('Loading...')
-%     end
-% 
-%     if exist('raw_encoder_p1','var') && exist('raw_encoder_h1','var') && exist('raw_encoder_p2','var') && exist('raw_encoder_h2','var') && exist('raw_force_wallace','var') && exist('raw_force_gromit','var') && exist('ref_signal','var')
-%         disp('All data acquired')
-%     end
 
 disp('Done')
 

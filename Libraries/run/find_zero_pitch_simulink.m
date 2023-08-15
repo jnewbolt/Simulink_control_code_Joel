@@ -126,9 +126,9 @@ while repeatFindZeroPitchFlag == 1
     if strcmp(pitchCheck,'y')
         switch traverse
             case 'Gromit'
-        ExperimentParameters.firstFoilPitchOffsetDegrees = newPitchOffsetDeg+ExperimentParameters.firstFoilPitchOffsetDegrees;
+        ExperimentParameters.firstFoilZeroPitchDegrees = newPitchOffsetDeg+ExperimentParameters.firstFoilPitchOffsetDegrees;
             case 'Wallace'
-        ExperimentParameters.secondFoilPitchOffsetDegrees = newPitchOffsetDeg+ExperimentParameters.secondFoilPitchOffsetDegrees;
+        ExperimentParameters.secondFoilZeroPitchDegrees = newPitchOffsetDeg+ExperimentParameters.secondFoilPitchOffsetDegrees;
         end
         disp([traverse, ' pitch bias updated'])
         break; % terminate while loop

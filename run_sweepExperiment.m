@@ -30,6 +30,23 @@ phase_vec = -180;%(initial_phase:phase_step:180);
 
 num_trials = length(P1star_vec)*length(H1star_vec)*length(P2star_vec)*length(H2star_vec)*length(phase_vec);
 trial_number = 1;
+%% Move motors to starting position
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp(['The traverses will be moved to their starting positions.',newline, ...
+    'Make sure they have clearance then press any key to continue'])
+pause()
+% Run the move to center of the flume
+[startPitchDegG, endPitchDegG] = deal(0,ExperimentParameters.firstFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(0,ExperimentParameters.secondFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startHeaveMetersW, endHeaveMetersW] = deal(0,ExperimentParameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
+run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except ExperimentParameters
+
 %% Experimental loop
 
 for P1star = P1star_vec
@@ -76,14 +93,6 @@ for H1star = H1star_vec
                 end
 
                 %% Profile generation
-                
-                % ramp to offset time
-                ramp_time = 5; % in [s]
-                
-                % Generate ramp profiles
-                [~, ramp_p1, ramp_h1] = ramp_fn(ramp_time, experiment.T, bias_trial, experiment.offset_home, 'g');
-                [~, ramp_p2, ramp_h2] = ramp_fn(ramp_time, experiment.T, bias_trial, experiment.offset_home, 'w');
-                
                 % Generate experiment profiles
                 [~, pprof1] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, pitch1, phi, 0);
                 [~, pprof2] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, heave1, 0, 0);
@@ -184,6 +193,21 @@ for H1star = H1star_vec
     end
 end
 end
+
+%% Move motors to home position
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp('The traverses will move to their home positions.')
+% Run the move to start positions
+[startPitchDegG, endPitchDegG] = deal(endPitchDegG,0); 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,0);
+[startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
+[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,0);
+run('move_to_position')
+clearvars -except ExperimentParameters Measurements Biases
 
 % send an email letting me know the experiment was completed
 message = strjoin(['The experiment finished at ',string(datetime),'. Come and check it out!']);

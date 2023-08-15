@@ -2,15 +2,7 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     pitchAmpDeg, traverse)
         
     T = 1/EP.sampleRate; % define timestep in seconds
-    switch traverse
-        case 'Wallace'
-            EP.firstFoilHeaveOffsetMeters = -0.15; % Gromit moves out of the way
-    end
-    % ramp from home position for gromit traverse
-    rampTime = 5; % Time to move to starting position, in seconds
-    [~, ramp_p1, ramp_h1] = ramp_fn(rampTime, EP, 'Gromit');
-    [~, ramp_p2, ramp_h2] = ramp_fn(rampTime, EP, 'Wallace');
-    
+
     % pitch motion profile will be constructed in steps:
     % a: move from zero to starting position
     pprof1_a = linspace(0, pitchAmpDeg, 0.5*scanTime/T)';
@@ -33,17 +25,22 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     % concatenate ramps with commanded motion profiles
     switch traverse
         case 'Gromit'
-            profs(:,1) = [ramp_p1; pprof1+EP.firstFoilPitchOffsetDegrees; flip(ramp_p1)];
-            profs(:,3) = zeros(size(profs(:,1)));
+            profs(:,1) = pprof1+EP.firstFoilPitchOffsetDegrees;
+            profs(:,2) = ones(size(pprof1))*EP.firstFoilHeaveOffsetMeters;
+            profs(:,3) = zeros(size(pprof1))+EP.secondFoilPitchOffsetDegrees;
         case 'Wallace'
-            profs(:,3) = [ramp_p2; pprof1+EP.secondFoilPitchOffsetDegrees; flip(ramp_p2)];
-            profs(:,1) = zeros(size(profs(:,1)));
+            profs(:,3) = pprof1+EP.secondFoilPitchOffsetDegrees;
+            profs(:,1) = zeros(size(pprof1))+EP.firstFoilPitchOffsetDegrees;
+            % Move Gromit out of the way to heave position -0.15 meters
+            numPtsRamp = length(pprof1_a);
+            offsetMetersG = (EP.firstFoilHeaveOffsetMeters-0.15);
+            rampHeaveMetersG = offsetMetersG*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))';
+            profs(:,2) = [rampHeaveMetersG; offsetMetersG*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersG)];
     end
-    profs(:,2) = [ramp_h1; ones(size(pprof1))*EP.firstFoilHeaveOffsetMeters; flip(ramp_h1)];
-    profs(:,4) = [ramp_h2; ones(size(pprof1))*EP.secondFoilHeaveOffsetMeters; flip(ramp_h2)];
-    profs(:,5) = [zeros(size(ramp_p1)); zeros(size(pprof1)); zeros(size(ramp_p1))];
+    profs(:,4) = ones(size(pprof1))*EP.secondFoilHeaveOffsetMeters;
+    profs(:,5) = zeros(size(pprof1));
     % mark the locations at which data will be extracted for alignment calculations:
-    profs([stp1, stp1+stp2, stp1+stp2+stp3, stp1+stp2+stp3+stp4]+length(ramp_p1),5) = 1;
+    profs([stp1, stp1+stp2, stp1+stp2+stp3, stp1+stp2+stp3+stp4],5) = 1;
 
     
     % convert into time series to be output to simulink
@@ -53,12 +50,6 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     pitchDegreesW = timeseries(profs(:,3),times);
     heaveMetersW = timeseries(profs(:,4),times);
     syncSig = timeseries(profs(:,5),times);
-
-    switch traverse
-        case 'Gromit'
-            pitchDegreesW = timeseries(zeros(size(times)),times); % Zero motion trajectory for wallace
-            heaveMetersW = timeseries(zeros(size(times)),times);
-    end
 
     % plot trajectories
     plot_profiles(pitchDegreesG,heaveMetersG,pitchDegreesW,heaveMetersW,syncSig);

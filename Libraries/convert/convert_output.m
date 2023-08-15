@@ -33,8 +33,8 @@ rawEncoders(rawEncoders(:,1:2)>1e6) = rawEncoders(rawEncoders(:,1:2)>1e6)-2^32;
 
 M.pitchDegreesG = rawEncoders(rangeTimes,1).*360/10000;
 M.heaveMetersG = -rawEncoders(rangeTimes,2).*0.0254/8000;
-M.pitchDegreesW = conv_encodertheta_traverse(rawEncoders(rangeTimes,3), 0) - EP.secondFoilPitchOffsetDegrees;
-M.heaveMetersW = conv_encodery_traverse(rawEncoders(rangeTimes,4), 0) - EP.secondFoilHeaveOffsetMeters;
+M.pitchDegreesW = conv_encodertheta_traverse(rawEncoders(rangeTimes,3), 0);
+M.heaveMetersW = conv_encodery_traverse(rawEncoders(rangeTimes,4), 0);
 
 % refSig = ref_signal(rangeTimes);
 

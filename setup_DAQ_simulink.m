@@ -12,6 +12,23 @@ ExperimentParameters = setup_prompt(); % prompts user to input parameter values 
 ExperimentParameters.motionDelay = 13;
 disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ', ...
     num2str(ExperimentParameters.motionDelay),' ms']);
+
+%% Move motors to starting position
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp(['The traverses will be moved to their starting positions.',newline, ...
+    'Make sure they have clearance then press any key to continue'])
+pause()
+% Run the move to center of the flume
+[startPitchDegG, endPitchDegG] = deal(0,0); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(0,ExperimentParameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
+[startHeaveMetersW, endHeaveMetersW] = deal(0,ExperimentParameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
+run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except ExperimentParameters
 %% Unloaded bias measurement
 % check for required parameters:
 if ~exist('ExperimentParameters','var')
@@ -22,8 +39,7 @@ disp(['Finding unloaded bias. Ensure flume is OFF and motors are ON.',newline,'P
 pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
-% This is not done with a function call so that the Simulink model can access workspace variables
-find_bias_simulink
+run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except ExperimentParameters Measurements Biases
 
 %% Find zero pitch
@@ -34,12 +50,12 @@ switch answer
     disp('Ensure flume is at speed and Gromit is ON. Press any key to continue')
     pause
     % check for required parameters:
-    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
-        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
-    end
+%     if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+%         error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
+%     end
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
-% This is not done with a function call so that the Simulink model can access workspace variables
-    find_zero_pitch_simulink
+
+    run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
     clearvars -except ExperimentParameters Biases Measurements
 
 end
@@ -51,15 +67,43 @@ switch answer
     disp('Ensure flume is at speed and Wallace is ON Press any key to continue')
     pause
     % check for required parameters:
-    if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
-        error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
-    end
+%     if ~exist('ExperimentParameters','var') || ~exist('Biases','var') || ~exist('Measurements','var')
+%         error('Missing necessary variables from workspace. Structures "ExperimentParameters", "Biases", and "Measurements" must be available.')
+%     end
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
-% This is not done with a function call so that the Simulink model can access workspace variables
-    find_zero_pitch_simulink
+    run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
     clearvars -except ExperimentParameters Biases Measurements
 end
     clearvars -except ExperimentParameters Biases Measurements
+%% Move to new start positions based on find zero pitch
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp(['The traverses will be moved to their starting positions.',newline, ...
+    'Make sure they have clearance then press any key to continue'])
+pause()
+% Run the move to center of the flume
+[startPitchDegG, endPitchDegG] = deal(0,ExperimentParameters.firstFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(endPitchDegW,ExperimentParameters.secondFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,endHeaveMetersW); %#ok<ASGLU> 
+run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except ExperimentParameters
+%% Redo the bias measurement at the new start positions
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp(['Repeating unloaded bias. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
+pause()
+
+% Run find_bias_simulink.m script, then clear temporary variables from the workspace
+run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except ExperimentParameters Measurements Biases
+
 %% Loaded bias measurement
 % check for required parameters:
 if ~exist('ExperimentParameters','var')
@@ -70,8 +114,22 @@ disp(['Finding loaded bias. Ensure flume is ON at speed and motors are ON.',newl
 pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
-% This is not done with a function call so that the Simulink model can access workspace variables
-find_bias_simulink
+run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except ExperimentParameters Measurements Biases
+
+%% Move motors to home position
+% check for required parameters:
+if ~exist('ExperimentParameters','var')
+    error('Missing necessary variables from workspace')
+end
+
+disp('The traverses will move to their home positions.')
+% Run the move to start positions
+[startPitchDegG, endPitchDegG] = deal(endPitchDegG,0); 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,0);
+[startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
+[startHeaveMetersW, endHeaveMetersW] = deal(endPitchDegW,0);
+run('move_to_position')
 clearvars -except ExperimentParameters Measurements Biases
 
 %% Ready

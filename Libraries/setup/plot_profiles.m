@@ -29,6 +29,7 @@ function plot_profiles(arg1, arg2, arg3, arg4, arg5)
         end
     end
     
+    figure
     subplot(2,1,1)
     plot(data_p1); hold on;
     plot(data_p2);
