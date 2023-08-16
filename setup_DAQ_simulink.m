@@ -18,8 +18,8 @@ disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure they have clearance then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,0); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
+[startPitchDegG, endPitchDegG] = deal(0,ExperimentParameters.firstFoilPitchOffsetDegrees); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,ExperimentParameters.firstFoilHeaveOffsetMeters); %#ok<ASGLU> 
 [startPitchDegW, endPitchDegW] = deal(0,ExperimentParameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
 [startHeaveMetersW, endHeaveMetersW] = deal(0,ExperimentParameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
