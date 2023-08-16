@@ -3,12 +3,12 @@
     % Find bias in the force measurements
     % NOTE: only overwrites the force biases unless bias is not specified
     % bias is an optional argument
-EP = ExperimentParameters; 
-sampleTime = 1/EP.sampleRate;
+P = Parameters; 
+sampleTime = 1/P.sampleRate;
 %% Stationary command profiles
 % Zero motion profile
 trajDuration = 20; % length of time of bias measurement in seconds
-trajStationary = zeros(trajDuration*EP.sampleRate,1);
+trajStationary = zeros(trajDuration*P.sampleRate,1);
 
 trajPitchDegreesG = trajStationary+endPitchDegG;
 trajHeaveMetersG = trajStationary+endHeaveMetersG;
@@ -21,7 +21,7 @@ trajRefSig = ones(size(trajStationary));
 plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
 
 % convert into time series to be output to simulink
-times = (0:length(trajPitchDegreesG)-1)'/EP.sampleRate; % time vector to create time series objects
+times = (0:length(trajPitchDegreesG)-1)'/P.sampleRate; % time vector to create time series objects
 pitchDegreesG = timeseries(trajPitchDegreesG,times);
 heaveMetersG = timeseries(trajHeaveMetersG,times);
 pitchDegreesW = timeseries(trajPitchDegreesW,times);
@@ -79,7 +79,7 @@ Biases.accmeterVoltsStdev = std(rawVoltsAccelmeter(rangeTimes,:),1);
     %% Convert output
 
 rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, EP);
+Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, P);
 
 %     %% Plot results
 % 
@@ -129,16 +129,16 @@ end
 %% Save bias into a subfolder within the active saving folder
 
 time = clock;
-dataFolderName = [EP.dataFolderName,'\data'];
+dataFolderName = [P.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
 biasFiles = dir([dataFolderName,'\Biases*']);
 numBiasFiles = numel(biasFiles);
-if numBiasFiles == 0
-    filename = [dataFolderName,'\BiasesNoLoad'];
+if numBiasFiles == 0 || numBiasFiles == 1
+    filename = [dataFolderName,'\BiasesNoLoad_',num2str(numBiasFiles)];
     BiasesNoLoad = Biases;
 else
-    filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles)];
+    filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles-1)];
     BiasesLoaded = Biases;
 end
 save(filename);

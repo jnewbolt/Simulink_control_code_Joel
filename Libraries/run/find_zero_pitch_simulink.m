@@ -1,5 +1,6 @@
 %% Find zero pitch simulink
-sampleTime = 1/ExperimentParameters.sampleRate;
+P = Parameters;
+sampleTime = 1/P.sampleRate;
 %% Alignment
 disp(['Aligning ',traverse, ' traverse.']);
 repeatFindZeroPitchFlag = 1;
@@ -14,7 +15,7 @@ while repeatFindZeroPitchFlag == 1
         expandSearchFlag = expandSearchFlag + 1;
 
         [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = ...
-            trajectory_find_zero_pitch(ExperimentParameters, scanTime, pitchAmpDeg, traverse);
+            trajectory_find_zero_pitch(P, scanTime, pitchAmpDeg, traverse);
         % simulation time
         simTime = ceil(times(end))+2;
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
@@ -48,7 +49,7 @@ while repeatFindZeroPitchFlag == 1
         %% Convert data
         rangeTimes = 1:length(rawEncoderPitchCountsG);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, ExperimentParameters);
+        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, P);
 
         %% Extract relevant forces for analysis
         k = find(refSig == 1); % inices of non-zero elements
@@ -70,10 +71,10 @@ while repeatFindZeroPitchFlag == 1
         end
     
         startPitchDegPosSweep = pitch_pos(1);
-        slopeDegPosSweep = (pitch_pos(end)-startPitchDegPosSweep)/(scanTime*ExperimentParameters.sampleRate);
+        slopeDegPosSweep = (pitch_pos(end)-startPitchDegPosSweep)/(scanTime*P.sampleRate);
     
         startPitchDegNegSweep = pitch_neg(1);
-        slopeDegNegSweep = (pitch_neg(end)-startPitchDegNegSweep)/(scanTime*ExperimentParameters.sampleRate);
+        slopeDegNegSweep = (pitch_neg(end)-startPitchDegNegSweep)/(scanTime*P.sampleRate);
     
         %% Linear fits on curves
         FyCoef_pos = polyfit(1:numel(Fy_pos), smooth(Fy_pos,100)', 1);
@@ -126,9 +127,9 @@ while repeatFindZeroPitchFlag == 1
     if strcmp(pitchCheck,'y')
         switch traverse
             case 'Gromit'
-        ExperimentParameters.firstFoilZeroPitchDegrees = newPitchOffsetDeg+ExperimentParameters.firstFoilPitchOffsetDegrees;
+        P.firstFoilZeroPitchDegrees = newPitchOffsetDeg+P.firstFoilPitchOffsetDegrees;
             case 'Wallace'
-        ExperimentParameters.secondFoilZeroPitchDegrees = newPitchOffsetDeg+ExperimentParameters.secondFoilPitchOffsetDegrees;
+        P.secondFoilZeroPitchDegrees = newPitchOffsetDeg+P.secondFoilPitchOffsetDegrees;
         end
         disp([traverse, ' pitch bias updated'])
         break; % terminate while loop
@@ -165,7 +166,7 @@ end % repeat alignment search
 %% Save bias into a subfolder within the active saving folder
 
 time = clock;
-dataFolderName = [ExperimentParameters.dataFolderName,'\data'];
+dataFolderName = [P.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
 findZeroPitchFiles = dir([dataFolderName,'\FindZeroPitch*']);
