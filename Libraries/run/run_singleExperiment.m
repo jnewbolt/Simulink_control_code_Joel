@@ -55,11 +55,11 @@ ramp_time = 5; % in [s]
 [~, ramp_p2, ramp_h2] = ramp_fn(ramp_time, experiment.T, bias_trial, experiment.offset_home, 'w');
 
 % Generate experiment profiles
-[~, pprof1] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, pitch1, phi, 0);
-[~, pprof2] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, heave1, 0, 0);
-[~, pprof3] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, pitch2, phase+phi, 0);
-[~, pprof4] = generate_profile(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, heave2, phase, 0);
-[~, rprof5] = generate_profile(num_cyc-4, freq, experiment.srate, transient_cycs+2, transient_cycs+2, 1, 0, 1); % reference signal
+[~, pprof1] = trajectory_experiment(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, pitch1, phi, 0);
+[~, pprof2] = trajectory_experiment(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, heave1, 0, 0);
+[~, pprof3] = trajectory_experiment(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, pitch2, phase+phi, 0);
+[~, pprof4] = trajectory_experiment(num_cyc, freq, experiment.srate, transient_cycs, transient_cycs, heave2, phase, 0);
+[~, rprof5] = trajectory_experiment(num_cyc-4, freq, experiment.srate, transient_cycs+2, transient_cycs+2, 1, 0, 1); % reference signal
 
 clear profs
 heaveW_delay = 50; % phase difference between pitch wallace and heave wallace (heave lags behind pitch)

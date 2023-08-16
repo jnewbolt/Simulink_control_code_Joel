@@ -52,10 +52,10 @@ Npts_ramp = ramp_time/T;
 ramp_h2 = offset_h2*(0.5*(1-cos( pi*(0:Npts_ramp-1)/Npts_ramp)))';
 ramp_p2 = offset_p2*(0.5*(1-cos( pi*(0:Npts_ramp-1)/Npts_ramp)))';
 
-[t1, pprof1] = generate_profile(num_cyc, freq, srate, 3, 3, pitch1, phi, 0);
-[t2, hprof1] = generate_profile(num_cyc, freq, srate, 3, 3, heave1, 0, 0);
-[t3, pprof2] = generate_profile(num_cyc, freq, srate, 3, 3, pitch2, phase+phi, 0);
-[t4, hprof2] = generate_profile(num_cyc, freq, srate, 3, 3, heave2, phase, 0);
+[t1, pprof1] = trajectory_experiment(num_cyc, freq, srate, 3, 3, pitch1, phi, 0);
+[t2, hprof1] = trajectory_experiment(num_cyc, freq, srate, 3, 3, heave1, 0, 0);
+[t3, pprof2] = trajectory_experiment(num_cyc, freq, srate, 3, 3, pitch2, phase+phi, 0);
+[t4, hprof2] = trajectory_experiment(num_cyc, freq, srate, 3, 3, heave2, phase, 0);
 
 t_ramp = T*(0:Npts_ramp-1); % dimensional ramping time vector
 
