@@ -3,8 +3,8 @@
 % flapping parameters
 
 % check if necessary variables were setup
-if ~exist('Parameters','var') ||  ~exist('Biases','var') || ~exist('BiasesLoaded','var')
-    error('Run "setup_DAQ_simulink" to establish experimental setup. Vars "experiment", "bias_unloaded", "bias_loaded" must be established.')
+if ~exist('Parameters','var') ||  ~exist('Biases','var')
+    error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters" and "Biases" must be established.')
 end
 
 %% Sweep parameters
@@ -36,7 +36,7 @@ pause()
 [startPitchDegW, endPitchDegW] = deal(0,Parameters.secondFoilZeroPitchDegrees); %#ok<ASGLU> 
 [startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Experimental loop
 for pitchAmpDegG = pitchAmpDegGvec
@@ -46,13 +46,11 @@ for heaveAmpMetersW = heaveAmpMetersWvec
     phaseLagStep = initialPhaseLagWbehindG; % initial value of phase difference in degrees
     while phaseLagStep <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
         %% Take loaded bias measurement
-        BiasesLoaded = Biases; % use bias_loaded as the bias to update the pitch and heave biases in the "fin_bias_simulink" routine
-        run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the load bias
-        BiasesNewLoaded = Biases; % establish new loaded bias
-        % for experiment: bias_trial = bias_newloaded - bias_loaded + bias_unloaded
-        BiasesTrial.Wallace = BiasesNewLoaded.Wallace - BiasesLoaded.Wallace + BiasesNoLoad.Wallace;
-        BiasesTrial.Gromit = BiasesNewLoaded.Gromit - BiasesLoaded.Gromit + BiasesNoLoad.Gromit;
-
+        run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the loaded bias
+        clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+        % for experiment: BiasesNoLoad = BiasesLoaded - BiasesLoaded0 + BiasesNoLoad0
+        Biases.NoLoad.forceVoltsW = Biases.Loaded.forceVoltsW - Biases.Loaded0.forceVoltsW + Biases.NoLoad0.forceVoltsW;
+        Biases.NoLoad.forceVoltsG = Biases.Loaded.forceVoltsG - Biases.Loaded0.forceVoltsG + Biases.NoLoad0.forceVoltsG;    
         %% Check velocity and acceleration limits
         heaveVelocityLimit = 0.5; % Heave velocity limit in m/s
         heaveAccelerationLimit = 4.5; % Heave acceleration limit in m/s/s
@@ -127,14 +125,13 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         
         rangeTimes = find(refSig);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, EP);
+        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, EP);
 
         %% Save data
         trialfilename = ['trial_',num2str(iTrial)];
         save([folder_name,'\',trialfilename]);
 
         %% Check for misalignment
-        
 %                 if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg
 %                     warning('Gromit pitch motor (Hudson) jerked. Foil will be realigned and trial will be repeated');
 %                     motor_warning_flag = 1; % raises flag if misalignment due to jerk was detected

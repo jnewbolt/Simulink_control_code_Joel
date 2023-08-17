@@ -134,12 +134,17 @@ dataFolderName = [P.dataFolderName,'\data'];
 % Check how many bias files have been created in order to name the current one being generated
 biasFiles = dir([dataFolderName,'\Biases*']);
 numBiasFiles = numel(biasFiles);
-if numBiasFiles == 0 || numBiasFiles == 1
-    filename = [dataFolderName,'\BiasesNoLoad_',num2str(numBiasFiles)];
-    BiasesNoLoad = Biases;
+if numBiasFiles == 0 
+    filename = [dataFolderName,'\BiasesNoLoad_BeforeFindZeroPitch'];
+elseif numBiasFiles == 1
+    filename = [dataFolderName,'\BiasesNoLoad_0'];
+    Biases.NoLoad0 = Biases;
+elseif numBiasFiles == 2
+    filename = [dataFolderName,'\BiasesLoaded_0'];
+    Biases.Loaded0 = Biases;
 else
-    filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles-1)];
-    BiasesLoaded = Biases;
+    filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles-2)];
+    Biases.Loaded = Biases;
 end
 save(filename);
 

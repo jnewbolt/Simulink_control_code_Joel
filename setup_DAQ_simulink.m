@@ -69,14 +69,14 @@ disp(['Repeating unloaded bias. Ensure flume is OFF and motors are ON.',newline,
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Measurements Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Loaded bias measurement
 disp(['Finding loaded bias. Ensure flume is ON at speed and motors are ON.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Measurements Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Move motors to home position
 disp('The traverses will move to their home positions.')
@@ -86,7 +86,7 @@ disp('The traverses will move to their home positions.')
 [startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
 [startHeaveMetersW, endHeaveMetersW] = deal(endPitchDegW,0);
 run('move_to_position')
-clearvars -except Parameters Measurements Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Ready
 disp('Done initializing experimental setup.')
