@@ -11,7 +11,6 @@ function M = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVolt
 % offset_h2
 
 %% Encoders
-
 if ~exist('rangeTimes', 'var') || isempty(rangeTimes)
     rangeTimes = 1:size(rawEncoders,1);
 end
