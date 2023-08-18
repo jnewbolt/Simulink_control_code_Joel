@@ -43,8 +43,8 @@ for pitchAmpDegG = pitchAmpDegGvec
 for heaveAmpMetersG = heaveAmpMetersGvec
 for pitchAmpDegW = pitchAmpDegWvec
 for heaveAmpMetersW = heaveAmpMetersWvec
-    phaseLagStep = initialPhaseLagWbehindG; % initial value of phase difference in degrees
-    while phaseLagStep <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
+    phaseLagWbehindG = initialPhaseLagWbehindG; % initial value of phase difference in degrees
+    while phaseLagWbehindG <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
         %% Take loaded bias measurement
         BiasesLoaded = Biases; % use bias_loaded as the bias to update the pitch and heave biases in the "fin_bias_simulink" routine
         run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the load bias
@@ -68,8 +68,8 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         % Generate experiment profiles
         [~, pprof1] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
         [~, pprof2] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
-        [~, pprof3] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagStep+phaseLagPitchDeg, 0);
-        [~, pprof4] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagStep, 0);
+        [~, pprof3] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
+        [~, pprof4] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
         [~, rprof5] = trajectory_experiment(nCycles-4, freq, EP.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
@@ -150,7 +150,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
 %                 end
 %                 close all
 %% Step forward the phase
-    phaseLagStep = phaseLagStep + phaseLagStep;
+    phaseLagWbehindG = phaseLagWbehindG + phaseLagStep;
     iTrial = iTrial+1;
     end
 end
