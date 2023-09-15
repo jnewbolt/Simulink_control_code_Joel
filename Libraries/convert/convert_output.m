@@ -1,5 +1,5 @@
 function M = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, ...
-    refSig, Biases, rangeTimes, EP)
+    refSig, Biases, rangeTimes, P)
 % % Required inputs:
 % raw_encoders
 % raw_wallace
@@ -50,7 +50,7 @@ M.flowMetersPerSecondVectrino = (rawVoltsVectrino(rangeTimes,:)-2.5)*2/5;
 
 forceSensorMassKilograms = 0.6; % Mass of mount 
 accmeterMetersPerSecondSqPerVolt = 9.81; % Meters per seconds squared per volt
-M.forceInertialLoadG = (forceSensorMassKilograms+EP.Foils.firstFoil.mass)*accmeterMetersPerSecondSqPerVolt* ...
+M.forceInertialLoadG = (forceSensorMassKilograms+P.Foils.firstFoil.mass)*accmeterMetersPerSecondSqPerVolt* ...
     (rawVoltsAccelmeter(rangeTimes,:)-Biases.accmeterVolts); 
 
 end

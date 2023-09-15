@@ -6,6 +6,17 @@
 if ~exist('Parameters','var') ||  ~exist('Biases','var')
     error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters" and "Biases" must be established.')
 end
+%% Move motors to starting position
+disp(['The traverses will be moved to their starting positions.',newline, ...
+    'Make sure they have clearance then press any key to continue'])
+pause()
+% Run the move to center of the flume
+[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilPitchOffsetDegrees); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.firstFoilHeaveOffsetMeters); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(0,Parameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
+[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
+run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
+clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Sweep parameters
 % non-changing parameters
@@ -16,27 +27,16 @@ nTransientCycs = 3;
 % variable parameters
 freq = 0.8889; % Frequency in cycles/sec
 freqG = freq; freqW = freq;
-pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
-heaveAmpMetersGvec = 0;%0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = 0; %70; % 65,75
-heaveAmpMetersWvec = 0;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+pitchAmpDegGvec = 10;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
+heaveAmpMetersGvec = 0.05;%0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
+pitchAmpDegWvec = 10; %70; % 65,75
+heaveAmpMetersWvec = 0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = -180; 
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = -180;%(initialPhaseLagWbehindG:phaseLagStep:180);
 
 nTrials = length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
 iTrial = 1;
-%% Move motors to starting position
-disp(['The traverses will be moved to their starting positions.',newline, ...
-    'Make sure they have clearance then press any key to continue'])
-pause()
-% Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilZeroPitchDegrees); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.firstFoilHeaveOffsetMeters); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(0,Parameters.secondFoilZeroPitchDegrees); %#ok<ASGLU> 
-[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
-run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Experimental loop
 for pitchAmpDegG = pitchAmpDegGvec
@@ -47,8 +47,9 @@ for heaveAmpMetersW = heaveAmpMetersWvec
     while phaseLagWbehindG <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
         %% Take loaded bias measurement
         run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the loaded bias
-        clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+%         clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
         % for experiment: BiasesNoLoad = BiasesLoaded - BiasesLoaded0 + BiasesNoLoad0
+        Biases.NoLoad = Biases.NoLoad0; % Passes accelerometer bias
         Biases.NoLoad.forceVoltsW = Biases.Loaded.forceVoltsW - Biases.Loaded0.forceVoltsW + Biases.NoLoad0.forceVoltsW;
         Biases.NoLoad.forceVoltsG = Biases.Loaded.forceVoltsG - Biases.Loaded0.forceVoltsG + Biases.NoLoad0.forceVoltsG;    
         %% Check velocity and acceleration limits
@@ -64,26 +65,26 @@ for heaveAmpMetersW = heaveAmpMetersWvec
 
         %% Profile generation
         % Generate experiment profiles
-        [~, pprof1] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
-        [~, pprof2] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
-        [~, pprof3] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
-        [~, pprof4] = trajectory_experiment(nCycles, freq, EP.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
-        [~, rprof5] = trajectory_experiment(nCycles-4, freq, EP.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
+        [~, pprof1] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
+        [~, pprof2] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
+        [~, pprof3] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
+        [~, pprof4] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
+        [~, rprof5] = trajectory_experiment(nCycles-4, freq, P.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
-        trajPitchDegreesG = endPitchDegG+[zeros(EP.heaveDelayW+EP.pitchDelayW,1); pprof1];
-        trajHeaveMetersG = endHeaveMetersG+[zeros(EP.heaveDelayW+EP.pitchDelayW,1); pprof2];
-        trajPitchDegreesW = endPitchDegW+[zeros(EP.heaveDelayW,1); pprof3; zeros(EP.pitchDelayW,1)];
-        trajHeaveMetersW = endHeaveMetersW+[pprof4; zeros(EP.heaveDelayW+EP.pitchDelayW,1)];
-        trajRefSig = [zeros(EP.heaveDelayW,1); zeros(EP.pitchDelayW,1); rprof5]; % reference signal
+        trajPitchDegreesG = endPitchDegG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof1];
+        trajHeaveMetersG = endHeaveMetersG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof2];
+        trajPitchDegreesW = endPitchDegW+[zeros(P.heaveDelayW,1); pprof3; zeros(P.pitchDelayW,1)];
+        trajHeaveMetersW = endHeaveMetersW+[pprof4; zeros(P.heaveDelayW+P.pitchDelayW,1)];
+        trajRefSig = [zeros(P.heaveDelayW,1); zeros(P.pitchDelayW,1); rprof5]; % reference signal
         
         % plot trajectories
         plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
         
         % convert into time series to be output to simulink
         % convert into time series to be output to simulink
-        times = (0:length(trajPitchDegreesG)-1)'/EP.sampleRate; % time vector to create time series objects
+        times = (0:length(trajPitchDegreesG)-1)'/P.sampleRate; % time vector to create time series objects
         pitchDegreesG = timeseries(trajPitchDegreesG,times);
         heaveMetersG = timeseries(trajHeaveMetersG,times);
         pitchDegreesW = timeseries(trajPitchDegreesW,times);
@@ -95,6 +96,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
         
         %% Run actual experiment
+        freqGain = freq; heaveGain = heaveAmpMetersG; % These values modify the Gromit motor command to get desired plant positions 
         simStatus = 'stopped';
         while strcmp(simStatus,'stopped')
             % clear variables before next experiment
@@ -125,11 +127,12 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         
         rangeTimes = find(refSig);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, EP);
+        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, P);
 
         %% Save data
         trialfilename = ['trial_',num2str(iTrial)];
-        save([folder_name,'\',trialfilename]);
+        dataFolderName = [P.dataFolderName,'\data'];
+        save([dataFolderName,'\',trialfilename]);
 
         %% Check for misalignment
 %                 if abs(mean(out(:,18))) > 0.08 % if average value of symmetric signal is more than 0.5 deg

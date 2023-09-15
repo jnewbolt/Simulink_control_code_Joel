@@ -21,7 +21,7 @@ while repeatFindZeroPitchFlag == 1
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
         
         % pass parameters for gromit heave gain in simulation
-        freq = 0; heave1 = 0;
+        freqGain = 0; heaveGain = 0;
     
         %% Run traverse
 
