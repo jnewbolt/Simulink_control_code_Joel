@@ -58,9 +58,9 @@ disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure they have clearance then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilPitchOffsetDegrees); %#ok<ASGLU> 
 [startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(endPitchDegW,Parameters.secondFoilZeroPitchDegrees); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(endPitchDegW,Parameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
 [startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,endHeaveMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
@@ -84,7 +84,7 @@ disp('The traverses will move to their home positions.')
 [startPitchDegG, endPitchDegG] = deal(endPitchDegG,0); 
 [startHeaveMetersG, endHeaveMetersG] = deal(0,0);
 [startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
-[startHeaveMetersW, endHeaveMetersW] = deal(endPitchDegW,0);
+[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,0);
 run('move_to_position')
 clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
