@@ -13,10 +13,10 @@ disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure they have clearance then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilPitchOffsetDegrees); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.firstFoilHeaveOffsetMeters); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(0,Parameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
-[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.secondFoilHeaveOffsetMeters); %#ok<ASGLU> 
+[startPitchDegG, endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(0,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
+[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
@@ -58,9 +58,9 @@ disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure they have clearance then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.firstFoilPitchOffsetDegrees); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,0); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(endPitchDegW,Parameters.secondFoilPitchOffsetDegrees); %#ok<ASGLU> 
+[startPitchDegG, endPitchDegG] = deal(endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, endHeaveMetersG] = deal(endHeaveMetersG,endHeaveMetersG); %#ok<ASGLU> 
+[startPitchDegW, endPitchDegW] = deal(endPitchDegW,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
 [startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,endHeaveMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW

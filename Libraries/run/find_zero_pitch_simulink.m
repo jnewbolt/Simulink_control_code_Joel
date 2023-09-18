@@ -127,9 +127,9 @@ while repeatFindZeroPitchFlag == 1
     if strcmp(pitchCheck,'y')
         switch traverse
             case 'Gromit'
-        P.firstFoilZeroPitchDegrees = newPitchOffsetDeg+P.firstFoilPitchOffsetDegrees;
+        P.pitchOffsetDegG = newPitchOffsetDeg+P.pitchOffsetDegG;
             case 'Wallace'
-        P.secondFoilZeroPitchDegrees = newPitchOffsetDeg+P.secondFoilPitchOffsetDegrees;
+        P.pitchOffsetDegW = newPitchOffsetDeg+P.pitchOffsetDegW;
         end
         disp([traverse, ' pitch bias updated'])
         break; % terminate while loop
