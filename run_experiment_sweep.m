@@ -65,26 +65,26 @@ for heaveAmpMetersW = heaveAmpMetersWvec
 
         %% Profile generation
         % Generate experiment profiles
-        [~, pprof1] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
-        [~, pprof2] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
-        [~, pprof3] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
-        [~, pprof4] = trajectory_experiment(nCycles, freq, P.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
-        [~, rprof5] = trajectory_experiment(nCycles-4, freq, P.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
+        [~, pprof1] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
+        [~, pprof2] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
+        [~, pprof3] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
+        [~, pprof4] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
+        [~, rprof5] = trajectory_experiment(nCycles-4, freq, Parameters.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
-        trajPitchDegreesG = endPitchDegG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof1];
-        trajHeaveMetersG = endHeaveMetersG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof2];
-        trajPitchDegreesW = endPitchDegW+[zeros(P.heaveDelayW,1); pprof3; zeros(P.pitchDelayW,1)];
-        trajHeaveMetersW = endHeaveMetersW+[pprof4; zeros(P.heaveDelayW+P.pitchDelayW,1)];
-        trajRefSig = [zeros(P.heaveDelayW,1); zeros(P.pitchDelayW,1); rprof5]; % reference signal
+        trajPitchDegreesG = endPitchDegG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof1];
+        trajHeaveMetersG = endHeaveMetersG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof2];
+        trajPitchDegreesW = endPitchDegW+[zeros(Parameters.heaveDelayW,1); pprof3; zeros(Parameters.pitchDelayW,1)];
+        trajHeaveMetersW = endHeaveMetersW+[pprof4; zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1)];
+        trajRefSig = [zeros(Parameters.heaveDelayW,1); zeros(Parameters.pitchDelayW,1); rprof5]; % reference signal
         
         % plot trajectories
         plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
         
         % convert into time series to be output to simulink
         % convert into time series to be output to simulink
-        times = (0:length(trajPitchDegreesG)-1)'/P.sampleRate; % time vector to create time series objects
+        times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
         pitchDegreesG = timeseries(trajPitchDegreesG,times);
         heaveMetersG = timeseries(trajHeaveMetersG,times);
         pitchDegreesW = timeseries(trajPitchDegreesW,times);
@@ -131,7 +131,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
 
         %% Save data
         trialfilename = ['trial_',num2str(iTrial)];
-        dataFolderName = [P.dataFolderName,'\data'];
+        dataFolderName = [Parameters.dataFolderName,'\data'];
         save([dataFolderName,'\',trialfilename]);
 
         %% Check for misalignment
