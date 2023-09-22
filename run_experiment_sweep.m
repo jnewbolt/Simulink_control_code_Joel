@@ -127,7 +127,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         
         rangeTimes = find(refSig);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, P);
+        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, Parameters);
 
         %% Save data
         trialfilename = ['trial_',num2str(iTrial)];
