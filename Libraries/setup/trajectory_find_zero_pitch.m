@@ -25,19 +25,19 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     % concatenate ramps with commanded motion profiles
     switch traverse
         case 'Gromit'
-            profs(:,1) = pprof1+EP.firstFoilPitchOffsetDegrees;
-            profs(:,2) = ones(size(pprof1))*EP.firstFoilHeaveOffsetMeters;
-            profs(:,3) = zeros(size(pprof1))+EP.secondFoilPitchOffsetDegrees;
+            profs(:,1) = pprof1+EP.pitchOffsetDegG;
+            profs(:,2) = ones(size(pprof1))*EP.heaveOffsetMetersG;
+            profs(:,3) = zeros(size(pprof1))+EP.pitchOffsetDegW;
         case 'Wallace'
-            profs(:,3) = pprof1+EP.secondFoilPitchOffsetDegrees;
-            profs(:,1) = zeros(size(pprof1))+EP.firstFoilPitchOffsetDegrees;
+            profs(:,3) = pprof1+EP.pitchOffsetDegW;
+            profs(:,1) = zeros(size(pprof1))+EP.pitchOffsetDegG;
             % Move Gromit out of the way to heave position -0.15 meters
             numPtsRamp = length(pprof1_a);
-            offsetMetersG = (EP.firstFoilHeaveOffsetMeters-0.15);
+            offsetMetersG = (EP.heaveOffsetMetersG-0.15);
             rampHeaveMetersG = offsetMetersG*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))';
             profs(:,2) = [rampHeaveMetersG; offsetMetersG*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersG)];
     end
-    profs(:,4) = ones(size(pprof1))*EP.secondFoilHeaveOffsetMeters;
+    profs(:,4) = ones(size(pprof1))*EP.heaveOffsetMetersW;
     profs(:,5) = zeros(size(pprof1));
     % mark the locations at which data will be extracted for alignment calculations:
     profs([stp1, stp1+stp2, stp1+stp2+stp3, stp1+stp2+stp3+stp4],5) = 1;
