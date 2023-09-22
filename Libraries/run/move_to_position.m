@@ -1,13 +1,12 @@
 % This script moves the traverses smoothly to either the 'home' position or the 'start' position
-P = Parameters; 
-sampleTime = 1/P.sampleRate;
+ sampleTime = 1/Parameters.sampleRate;
 
 rampTime = 5; % ramp time in seconds
 % Generate ramp profiles
-[~, rampPitchG] = ramp_fn(rampTime,startPitchDegG, endPitchDegG, P.sampleRate);
-[~, rampHeaveG] = ramp_fn(rampTime,startHeaveMetersG, endHeaveMetersG, P.sampleRate);
-[~, rampPitchW] = ramp_fn(rampTime,startPitchDegW, endPitchDegW, P.sampleRate);
-[rampTimesVector, rampHeaveW] = ramp_fn(rampTime,startHeaveMetersW, endHeaveMetersW, P.sampleRate);
+[~, rampPitchG] = ramp_fn(rampTime,startPitchDegG, endPitchDegG, Parameters.sampleRate);
+[~, rampHeaveG] = ramp_fn(rampTime,startHeaveMetersG, endHeaveMetersG, Parameters.sampleRate);
+[~, rampPitchW] = ramp_fn(rampTime,startPitchDegW, endPitchDegW, Parameters.sampleRate);
+[rampTimesVector, rampHeaveW] = ramp_fn(rampTime,startHeaveMetersW, endHeaveMetersW, Parameters.sampleRate);
 
 % plot trajectories
 plot_profiles(rampPitchG,rampHeaveG,rampPitchW,rampHeaveW);

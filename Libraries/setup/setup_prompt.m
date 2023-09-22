@@ -1,28 +1,28 @@
-function [ExperimentParameters] = setup_prompt()
+function [Parameters] = setup_prompt()
 % default answers
-EP.sampleRate = '1000';
-EP.firstFoilShape = 'V1';
-EP.secondFoilShape = 'None';
-EP.flumeDepthMeters = '0.55';
-EP.flumeHertz = '16.0';
-EP.foilSeparationMeters = '0.242'; 
-EP.pitchOffsetDegG = '0';
-EP.heaveOffsetMetersG = '0';
-EP.pitchOffsetDegW = '181';
-EP.heaveOffsetMetersW = '0.23';
-EP.temperatureCelsius = '22.77';
-EP.pitchAxis = '0.5';
-EP.pivFlag = 'n';
-EP.filterFlag = 'n';
-EP.experimentName = 'Enter descriptive name';
-EP.save2LRS = 'y';
-EP.wallDistanceLeftMeters = '0.4';
-EP.wallDistanceRightMeters = '0.4';
+P.sampleRate = '1000';
+P.firstFoilShape = 'V1';
+P.secondFoilShape = 'None';
+P.flumeDepthMeters = '0.55';
+P.flumeHertz = '16.0';
+P.foilSeparationMeters = '0.242'; 
+P.pitchOffsetDegG = '0';
+P.heaveOffsetMetersG = '0';
+P.pitchOffsetDegW = '181';
+P.heaveOffsetMetersW = '0.23';
+P.temperatureCelsius = '22.77';
+P.pitchAxis = '0.5';
+P.pivFlag = 'n';
+P.filterFlag = 'n';
+P.experimentName = 'Enter descriptive name';
+P.save2LRS = 'y';
+P.wallDistanceLeftMeters = '0.4';
+P.wallDistanceRightMeters = '0.4';
 % expected time delay between Gromit and Wallace (Gromit leading motion)
-EP.pitchDelayW = 13;
-EP.heaveDelayW = 50; % phase difference between pitch wallace and heave wallace (heave lags behind pitch)
+P.pitchDelayW = 13;
+P.heaveDelayW = 50; % phase difference between pitch wallace and heave wallace (heave lags behind pitch)
 disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit leading the motion) is set to ', ...
-    num2str(EP.pitchDelayW),' ms']);
+    num2str(P.pitchDelayW),' ms']);
 
 % generate prompt window
 prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string): ','Enter second foil shape (as string): ', ...
@@ -35,55 +35,55 @@ prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string)
 
 % input dialog window
 numLines = 1; 
-expCellArray = struct2cell(EP);
+expCellArray = struct2cell(P);
 answer = inputdlg(prompt, 'Experiment configuration', numLines, expCellArray);
 
 % store reponses
-EP.sampleRate = str2double(answer{1});
-EP.firstFoilShape = char(answer{2});
-EP.secondFoilShape = char(answer{3});
-EP.flumeDepthMeters = str2double(answer{4});
-EP.flumeHertz = str2double(answer{5});
-EP.foilSeparationMeters = str2double(answer{6});
-EP.pitchOffsetDegG = str2double(answer{7});
-EP.heaveOffsetMetersG = str2double(answer{8});
-EP.pitchOffsetDegW = str2double(answer{9});
-EP.heaveOffsetMetersW = str2double(answer{10});
-EP.temperatureCelsius = str2double(answer{11});
-EP.pitchAxis = str2double(answer{12});
-EP.pivFlag = char(answer{13});
-EP.filterFlag = char(answer{14});
-EP.experimentName = char(answer{15});
-EP.save2LRS = char(answer{16});
-EP.wallDistanceLeftMeters = str2double(answer{17});
-EP.wallDistanceRightMeters = str2double(answer{18});
+P.sampleRate = str2double(answer{1});
+P.firstFoilShape = char(answer{2});
+P.secondFoilShape = char(answer{3});
+P.flumeDepthMeters = str2double(answer{4});
+P.flumeHertz = str2double(answer{5});
+P.foilSeparationMeters = str2double(answer{6});
+P.pitchOffsetDegG = str2double(answer{7});
+P.heaveOffsetMetersG = str2double(answer{8});
+P.pitchOffsetDegW = str2double(answer{9});
+P.heaveOffsetMetersW = str2double(answer{10});
+P.temperatureCelsius = str2double(answer{11});
+P.pitchAxis = str2double(answer{12});
+P.pivFlag = char(answer{13});
+P.filterFlag = char(answer{14});
+P.experimentName = char(answer{15});
+P.save2LRS = char(answer{16});
+P.wallDistanceLeftMeters = str2double(answer{17});
+P.wallDistanceRightMeters = str2double(answer{18});
 
  % finds properties of the foils selected for the experiment
-EP.Foils = foils_database(EP.firstFoilShape,EP.secondFoilShape);
+P.Foils = foils_database(P.firstFoilShape,P.secondFoilShape);
 
 % establish save folder
-if EP.save2LRS == 'y'
-    EP.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',EP.experimentName];
+if P.save2LRS == 'y'
+    P.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',P.experimentName];
 else
-    EP.dataFolderName = ['D:\Experiments\Data\',EP.experimentName];
+    P.dataFolderName = ['D:\Experiments\Data\',P.experimentName];
 end
 
 % Prompt user for a new folder name if the previous folder already exists (overwrite protection)
-[~, msg, ~] = mkdir(EP.dataFolderName);
+[~, msg, ~] = mkdir(P.dataFolderName);
 while strcmp(msg,'Directory already exists.')
     disp('Tried to create data folder that already exitsts! Appending date and time to folder name.')
     currDate = strrep(strrep(char(datetime), ':', '-'),' ','_');
-    newDataDir = [EP.experimentName,'_',currDate];
-    if EP.save2LRS == 'y'
-        EP.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
+    newDataDir = [P.experimentName,'_',currDate];
+    if P.save2LRS == 'y'
+        P.dataFolderName = ['R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\',newDataDir];
     else
-        EP.dataFolderName = ['D:\Experiments\Data\',newDataDir];
+        P.dataFolderName = ['D:\Experiments\Data\',newDataDir];
     end
-    [~, msg, ~] = mkdir(EP.dataFolderName);
+    [~, msg, ~] = mkdir(P.dataFolderName);
 end
-folder_name = [EP.dataFolderName,'\data'];
+folder_name = [P.dataFolderName,'\data'];
 mkdir(folder_name); % for the bias measurements
 
 % e.offset_home = [e.firstFoilPitchOffsetDegrees, e.firstFoilHeaveOffsetMeters, e.secondFoilPitchOffsetDegrees, e.secondFoilHeaveOffsetMeters];
-ExperimentParameters = EP;
+Parameters = P;
 end

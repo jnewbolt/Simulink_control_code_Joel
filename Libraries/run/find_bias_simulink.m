@@ -1,14 +1,12 @@
-% function [Measurements, Biases] = find_bias_simulink(EP)
 %% Find bias - simulink control
     % Find bias in the force measurements
     % NOTE: only overwrites the force biases unless bias is not specified
     % bias is an optional argument
-P = Parameters; 
-sampleTime = 1/P.sampleRate;
+sampleTime = 1/Parameters.sampleRate;
 %% Stationary command profiles
 % Zero motion profile
 trajDuration = 20; % length of time of bias measurement in seconds
-trajStationary = zeros(trajDuration*P.sampleRate,1);
+trajStationary = zeros(trajDuration*Parameters.sampleRate,1);
 
 trajPitchDegreesG = trajStationary+endPitchDegG;
 trajHeaveMetersG = trajStationary+endHeaveMetersG;
@@ -21,7 +19,7 @@ trajRefSig = ones(size(trajStationary));
 plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
 
 % convert into time series to be output to simulink
-times = (0:length(trajPitchDegreesG)-1)'/P.sampleRate; % time vector to create time series objects
+times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
 pitchDegreesG = timeseries(trajPitchDegreesG,times);
 heaveMetersG = timeseries(trajHeaveMetersG,times);
 pitchDegreesW = timeseries(trajPitchDegreesW,times);
@@ -79,7 +77,7 @@ Biases.accmeterVoltsStdev = std(rawVoltsAccelmeter(rangeTimes,:),1);
     %% Convert output
 
 rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, P);
+Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, Parameters);
 
 %     %% Plot results
 % 
@@ -129,7 +127,7 @@ end
 %% Save bias into a subfolder within the active saving folder
 
 time = clock;
-dataFolderName = [P.dataFolderName,'\data'];
+dataFolderName = [Parameters.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
 biasFiles = dir([dataFolderName,'\Biases*']);

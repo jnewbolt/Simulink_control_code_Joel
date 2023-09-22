@@ -29,11 +29,11 @@ freq = 0.8889; % Frequency in cycles/sec
 freqG = freq; freqW = freq;
 pitchAmpDegGvec = 10;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
 heaveAmpMetersGvec = 0.05;%0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = 10; %70; % 65,75
-heaveAmpMetersWvec = 0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
-initialPhaseLagWbehindG = -180; 
+pitchAmpDegWvec = 0;%10; %70; % 65,75
+heaveAmpMetersWvec = 0;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
-phaseLagWbehindGvec = -180;%(initialPhaseLagWbehindG:phaseLagStep:180);
+phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
 
 nTrials = length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
 iTrial = 1;
