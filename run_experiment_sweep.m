@@ -1,7 +1,7 @@
 %% Parameter sweep
 % Run this script after "setup_DAQ_simulink.m" in order to run an experiment with trials that change the
 % flapping parameters
-
+tic
 % check if necessary variables were setup
 if ~exist('Parameters','var') ||  ~exist('Biases','var')
     error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters" and "Biases" must be established.')
@@ -176,7 +176,8 @@ clearvars -except Parameters Measurements Biases
 
 %% Send email
 % send an email letting me know the experiment was completed
-message = strjoin(['The experiment finished at ',string(datetime),'. Come and check it out!']);
+experimentDuration = toc;
+message = strjoin(['The experiment finished at ',string(datetime),' with a total runtime of ',num2str(experimentDuration/60,1),'. Come and check it out!']);
 sendmail('joel_newbolt@brown.edu','Experiment done',message);
 
 disp('End of experiment')
