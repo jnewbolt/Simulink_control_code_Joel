@@ -46,6 +46,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
     phaseLagWbehindG = initialPhaseLagWbehindG; % initial value of phase difference in degrees
     while phaseLagWbehindG <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
         %% Take loaded bias measurement
+        disp('Finding LOADED BIAS')
         run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the loaded bias
 %         clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
         % for experiment: BiasesNoLoad = BiasesLoaded - BiasesLoaded0 + BiasesNoLoad0
