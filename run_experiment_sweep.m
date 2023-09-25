@@ -8,7 +8,7 @@ if ~exist('Parameters','var') ||  ~exist('Biases','var')
 end
 %% Move motors to starting position
 disp(['The traverses will be moved to their starting positions.',newline, ...
-    'Make sure they have clearance then press any key to continue'])
+    'Make sure MOTORS have CLEARANCE and FLUME IS ON, then press any key to continue'])
 pause()
 % Run the move to center of the flume
 [startPitchDegG, endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
@@ -27,10 +27,10 @@ nTransientCycs = 3;
 % variable parameters
 freq = 0.8889; % Frequency in cycles/sec
 freqG = freq; freqW = freq;
-pitchAmpDegGvec = 10;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
-heaveAmpMetersGvec = 0.05;%0.5; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = 0;%10; %70; % 65,75
-heaveAmpMetersWvec = 0;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
+heaveAmpMetersGvec = 0.05;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
+pitchAmpDegWvec = 10;%10; %70; % 65,75
+heaveAmpMetersWvec = 0.05;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
@@ -70,7 +70,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         [~, pprof2] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
         [~, pprof3] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
         [~, pprof4] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
-        [~, rprof5] = trajectory_experiment(nCycles-4, freq, Parameters.sampleRate, nTransientCycs+2, nTransientCycs+2, 1, 0, 1); % reference signal
+        [~, rprof5] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
