@@ -21,7 +21,7 @@ run('move_to_position') % This is not done with a function call so that the Simu
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Unloaded bias measurement
-disp(['Finding unloaded bias. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
+disp(['Finding UNLOADED BIAS. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
 pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
@@ -65,14 +65,14 @@ pause()
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 %% Redo the bias measurement at the new start positions
-disp(['Repeating unloaded bias. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
+disp(['Repeating UNLOADED BIAS. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Loaded bias measurement
-disp(['Finding loaded bias. Ensure flume is ON at speed and motors are ON.',newline,'Press any key to continue.'])
+disp(['Finding LOADED BIAS. Ensure flume is ON at speed and motors are ON.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
