@@ -1,7 +1,7 @@
-function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(EP, scanTime, ...
+function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(P, scanTime, ...
     pitchAmpDeg, traverse)
         
-    T = 1/EP.sampleRate; % define timestep in seconds
+    T = 1/P.sampleRate; % define timestep in seconds
 
     % pitch motion profile will be constructed in steps:
     % a: move from zero to starting position
@@ -25,26 +25,29 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     % concatenate ramps with commanded motion profiles
     switch traverse
         case 'Gromit'
-            profs(:,1) = pprof1+EP.pitchOffsetDegG;
-            profs(:,2) = ones(size(pprof1))*EP.heaveOffsetMetersG;
-            profs(:,3) = zeros(size(pprof1))+EP.pitchOffsetDegW;
-        case 'Wallace'
-            profs(:,3) = pprof1+EP.pitchOffsetDegW;
-            profs(:,1) = zeros(size(pprof1))+EP.pitchOffsetDegG;
-            % Move Gromit out of the way to heave position -0.15 meters
+            profs(:,1) = pprof1+P.pitchOffsetDegG;
+            profs(:,2) = ones(size(pprof1))*P.heaveOffsetMetersG;
+            profs(:,3) = ones(size(pprof1))*P.pitchOffsetDegW;
+            profs(:,4) = ones(size(pprof1))*P.heaveOffsetMetersW;
+            % Move Wallace out of the way to heave position -15 cm
             numPtsRamp = length(pprof1_a);
-            offsetMetersG = (EP.heaveOffsetMetersG-0.15);
-            rampHeaveMetersG = offsetMetersG*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))';
-            profs(:,2) = [rampHeaveMetersG; offsetMetersG*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersG)];
+            offsetHeaveMetersZeroPitchW = -0.15;
+            rampHeaveMetersW = offsetHeaveMetersZeroPitchW*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))'+ones(numPtsRamp,1)*P.heaveOffsetMetersW;
+            profs(:,4) = [rampHeaveMetersW; (offsetHeaveMetersZeroPitchW+P.heaveOffsetMetersW)*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersW)];
+        case 'Wallace'
+            profs(:,1) = ones(size(pprof1))*P.pitchOffsetDegG;
+            profs(:,2) = ones(size(pprof1))*P.heaveOffsetMetersG;
+            profs(:,3) = pprof1+P.pitchOffsetDegW;
+            profs(:,4) = ones(size(pprof1))*P.heaveOffsetMetersW;
     end
-    profs(:,4) = ones(size(pprof1))*EP.heaveOffsetMetersW;
+
     profs(:,5) = zeros(size(pprof1));
     % mark the locations at which data will be extracted for alignment calculations:
     profs([stp1, stp1+stp2, stp1+stp2+stp3, stp1+stp2+stp3+stp4],5) = 1;
 
     
     % convert into time series to be output to simulink
-    times = (0:size(profs,1)-1)'/EP.sampleRate; % time vector to create time series objects
+    times = (0:size(profs,1)-1)'/P.sampleRate; % time vector to create time series objects
     pitchDegreesG = timeseries(profs(:,1),times);
     heaveMetersG = timeseries(profs(:,2),times);
     pitchDegreesW = timeseries(profs(:,3),times);

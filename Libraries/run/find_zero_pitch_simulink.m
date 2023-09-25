@@ -6,7 +6,7 @@ repeatFindZeroPitchFlag = 1;
 while repeatFindZeroPitchFlag == 1
     %% Generate profiles
     % for initial search:
-    scanTime = 5;
+    scanTime = 6;
     pitchAmpDeg = 5;
     expandSearchFlag = 0;
 
