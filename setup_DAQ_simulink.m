@@ -10,7 +10,7 @@ Parameters = setup_prompt(); % prompts user to input parameter values for the ex
 
 %% Move motors to starting position
 disp(['The traverses will be moved to their starting positions.',newline, ...
-    'Make sure they have clearance then press any key to continue'])
+    'Make sure MOTORS ARE ON with CLEARANCE to move, then press any key to continue.'])
 pause()
 % Run the move to center of the flume
 [startPitchDegG, endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
@@ -21,7 +21,7 @@ run('move_to_position') % This is not done with a function call so that the Simu
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Unloaded bias measurement
-disp(['Finding UNLOADED BIAS. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
+disp(['Finding UNLOADED BIAS. Ensure flume is OFF.',newline,'Press any key to continue.'])
 pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
@@ -33,7 +33,7 @@ answer = input(['Run "find_zero_pitch" for Gromit? y/n + Enter', newline],"s");
 switch answer
     case 'y'
     traverse = 'Gromit';
-    disp('Ensure flume is at speed and Gromit is ON. Press any key to continue')
+    disp('Turn FLUME ON. Then press any key to continue')
     pause
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
@@ -45,7 +45,7 @@ answer = input(['Run "find_zero_pitch" for Wallace?? y/n + Enter', newline],"s")
 switch answer
     case 'y'
     traverse = 'Wallace';
-    disp('Ensure flume is at speed and Wallace is ON Press any key to continue')
+    disp('Ensure FLUME is ON. Then press any key to continue')
     pause
     % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
@@ -54,9 +54,7 @@ end
     clearvars -except Parameters Biases Measurements endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
     
 %% Move to new start positions based on find zero pitch
-disp(['The traverses will be moved to their starting positions.',newline, ...
-    'Make sure they have clearance then press any key to continue'])
-pause()
+disp('The traverses will be moved to their zero-pitch positions.')
 % Run the move to center of the flume
 [startPitchDegG, endPitchDegG] = deal(endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
 [startHeaveMetersG, endHeaveMetersG] = deal(endHeaveMetersG,endHeaveMetersG); %#ok<ASGLU> 
@@ -65,14 +63,14 @@ pause()
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 %% Redo the bias measurement at the new start positions
-disp(['Repeating UNLOADED BIAS. Ensure flume is OFF and motors are ON.',newline,'Press any key to continue.'])
+disp(['Repeating UNLOADED BIAS. Turn FLUME OFF.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Loaded bias measurement
-disp(['Finding LOADED BIAS. Ensure flume is ON at speed and motors are ON.',newline,'Press any key to continue.'])
+disp(['Finding LOADED BIAS. Turn FLUME ON.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
@@ -89,4 +87,4 @@ run('move_to_position')
 clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
 
 %% Ready
-disp('Done initializing experimental setup.')
+disp('Done with experiment setup!')
