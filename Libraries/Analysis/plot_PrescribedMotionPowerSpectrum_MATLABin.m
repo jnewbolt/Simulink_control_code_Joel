@@ -31,11 +31,11 @@
 
     % Freq. of predicted vortex shedding
     St=0.2;
-    f_vortex = St*flowspeed_measured_mean/thcknss;
-    plot([f_vortex/freq f_vortex/freq],[-60 60],'color','red','LineStyle','--','LineWidth',4)
+    fVortex = St*flowspeedMetersPerSecMean/chordMetersG;
+    plot([fVortex/freq fVortex/freq],[-60 60],'color','red','LineStyle','--','LineWidth',4)
 
 %     plot([flume_hertz/freq,flume_hertz/freq],[-60,60],'color','cyan','LineStyle','--','LineWidth',4)
-    plot(f_force/freq,10*log10(force_powerspec),'Color','black','LineWidth',4); % plot force spectrum
+    plot(freqForceSpec/freq,10*log10(forcePowerSpec),'Color','black','LineWidth',4); % plot force spectrum
 %     scatter(forcespec_peaklocs,forcespec_peakpowers,'Marker','o');
     xlabel('Frequency (f/f_{prescribed})')
     ylabel('Force PSD (dB/Hz)')

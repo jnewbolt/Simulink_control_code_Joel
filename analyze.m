@@ -1,8 +1,7 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'R:\ENG_Breuer_Shared\jnewbolt\DAQandMotorControl\Data\SmallFoilAndEllipCyl_pitch1=10deg,heave1=0.5c';
-thcknss = 0.0238; span_foil =0.365;%chord_foil = 0.06; %cross
+datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
 %% Some alternate important data locations:
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
@@ -21,32 +20,32 @@ thcknss = 0.0238; span_foil =0.365;%chord_foil = 0.06; %cross
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
-singletrial_analysis = 1;
-manytrial_analysis = 0;
+singleTrialAnalysis = 1;
+manyTrialAnalysis = 0;
 varyphase = 1;
 varypitch1 = 0;
 
 createplotForcesVsTimeG = 1;
 createplotForcesVsTimeW = 1;
-createplotForcesVsDisplacementsG = 0;
-createplotForcesVsDisplacementsW = 0;
-createplotForceSpectrum = 0;
+createplotForcesVsDisplacementsG = 1;
+createplotForcesVsDisplacementsW = 1;
+createplotForceSpectrum = 1;
 createplotEnergyMap = 0;
 createGIF = 0;
 
-if manytrial_analysis == 0
-    firsttrial = 6*19+1+14-4;
-    numtrials = firsttrial;
+if manyTrialAnalysis == 0
+    firstTrial = 1;
+    nTrials = firstTrial;
 end
 
 %% Find the data files
 dir_fullname = [datadir,'\data\'];
 trialfiles = dir([dir_fullname,'*.mat']);
-trialfiles=trialfiles(~contains({trialfiles.name},'bias')); 
+trialfiles=trialfiles(contains({trialfiles.name},'trial')); 
 trialfiles = natsortfiles(trialfiles);
-if manytrial_analysis == 1
-firsttrial = 1;
-numtrials = length(trialfiles);
+if manyTrialAnalysis == 1
+firstTrial = 1;
+nTrials = length(trialfiles);
 end
 % 
 % % % % Combine strings to form filename and load last trial to get some necessary variable values from the trial
@@ -78,32 +77,32 @@ end
 
 
 %% Define the necessary variables in order to pre-allocate memory
-f_star_commanded_W = nan(numtrials,1);
-A_star_commanded_W = nan(numtrials,1);
-A_star_measured_W = nan(numtrials,1);
-phase12 = nan(numtrials,1);
-flowspeed_measured_mean = nan(numtrials,1);
-flowspeed_measured_stdev = nan(numtrials,1);
-power_mean = nan(numtrials,1);
-powercoef_mean = nan(numtrials,1);
-power_scale = nan(numtrials,1);
-flowspeed_measured_p2p = nan(numtrials,1);
-f_force_filtered_dom = nan(numtrials,1);
-force_scale_W = nan(numtrials,1);
-force_scale_G = nan(numtrials,1);
-delay = nan(numtrials,1);
-num_forcespecpeaks = nan(numtrials,1);
-liftcoef_alltrials_G = nan(numtrials,1);
-dragcoef_alltrials_G = nan(numtrials,1);
-inertialload_alltrials = nan(numtrials,1);
-torqueLD_scale_G = nan(numtrials,1);
-torquez_scale_G = nan(numtrials,1);
-torqueLD_scale_W = nan(numtrials,1);
-torquez_scale_W = nan(numtrials,1);
-gif_index = 1;
+freqStarCmdW = nan(nTrials,1);
+AmpStarCmdW = nan(nTrials,1);
+AmpStarMeasuredW = nan(nTrials,1);
+phase12 = nan(nTrials,1);
+flowspeedMetersPerSecMean = nan(nTrials,1);
+flowspeedMetersPerSecStddev = nan(nTrials,1);
+powerMeanG = nan(nTrials,1);
+powerCoefMeanG = nan(nTrials,1);
+powerScale = nan(nTrials,1);
+flowspeed_measured_p2p = nan(nTrials,1);
+f_force_filtered_dom = nan(nTrials,1);
+forceScaleW = nan(nTrials,1);
+forceScaleG = nan(nTrials,1);
+delay = nan(nTrials,1);
+num_forcespecpeaks = nan(nTrials,1);
+liftcoef_alltrials_G = nan(nTrials,1);
+dragcoef_alltrials_G = nan(nTrials,1);
+inertialload_alltrials = nan(nTrials,1);
+torqueLDscaleG = nan(nTrials,1);
+torquezScaleG = nan(nTrials,1);
+torqueLDscaleW = nan(nTrials,1);
+torquezScaleW = nan(nTrials,1);
+gifIndex = 1;
 %% Loop through trials
 
-for trial_index = firsttrial:numtrials
+for iTrial = firstTrial:nTrials
 
 %% Load the requested trial data
 %     if varyphase==0
@@ -129,128 +128,132 @@ for trial_index = firsttrial:numtrials
 
     try
 %         load(trialname,'transient_cycs','out','profs','freq','phase')
-        trialname=[dir_fullname,trialfiles(trial_index).name];
+        trialname=[dir_fullname,trialfiles(iTrial).name];
         load(trialname);
     catch
         disp(['Failed to load ',trialname])
     end
 
 %% Extract measured quantities
+    P = Parameters; M = Measurements;
     % Define timesteps for each subtrial, excluding ramp up/down
-    timesteps = length(out);
-    timestep_start = round(transient_cycs/(freq*T))+1;
-    timestep_end = round(timesteps-transient_cycs/(freq*T));
-    times = T*(1:timestep_end-timestep_start+1);
-    time_star = times*freq;
-    phase12(trial_index) = phase;
+    nTimesteps = length(Measurements.pitchDegreesG);
+    timestepFirst = round(nTransientCycs*P.sampleRate/freq)+1;
+    timestepLast = round(nTimesteps-nTransientCycs*P.sampleRate/freq);
+    times = (1:timestepLast-timestepFirst+1)/P.sampleRate;
+    timeStar = times*freq;
+    phase12(iTrial) = phaseLagWbehindG;
 
-    heave_commanded_G = outh1.Data;
-    heave_commanded_W = outh2.Data;
-    pitch_commanded_G = outp1.Data;
-    pitch_commanded_W = outp2.Data;
-    heave_measured_G = out(timestep_start:timestep_end,2);
-    heave_measured_W = out(timestep_start:timestep_end,4)-mean(out(timestep_start:timestep_end,4));
-    heave_star_measured_G = heave_measured_G/chord_foil; % Compared to thin Aluminum foil chord of 7.5cm
-    heave_star_measured_W = heave_measured_W/thcknss;
-    pitch_measured_G = -1*out(timestep_start:timestep_end,1);
-    pitch_measured_W = -1*(out(timestep_start:timestep_end,3)-mean(out(timestep_start:timestep_end,3)));
-    force_x0_W = out(timestep_start:timestep_end,7);
-    force_y0_W = out(timestep_start:timestep_end,8);
-    force_z0_W = out(timestep_start:timestep_end,9);
-    torque_x0_W = out(timestep_start:timestep_end,10);
-    torque_y0_W = out(timestep_start:timestep_end,11);
-    torque_z0_W = out(timestep_start:timestep_end,12);
-    force_x0_G = out(timestep_start:timestep_end,17);
-    force_y0_G = out(timestep_start:timestep_end,18);
-    force_z0_G = out(timestep_start:timestep_end,19);
-    torque_x0_G = out(timestep_start:timestep_end,20);
-    torque_y0_G = out(timestep_start:timestep_end,21);
-    torque_z0_G = out(timestep_start:timestep_end,22);
-    force_D_G = force_x0_G.*cos(pitch_measured_G) - force_y0_G.*sin(pitch_measured_G);
-    force_L_G = force_y0_G.*cos(pitch_measured_G) + force_x0_G.*sin(pitch_measured_G);    
-    force_D_W = force_x0_W.*cos(pitch_measured_W) - force_y0_W.*sin(pitch_measured_W);
-    force_L_W = force_y0_W.*cos(pitch_measured_W) + force_x0_W.*sin(pitch_measured_W);
-    torque_D_G = torque_y0_G.*cos(pitch_measured_G) + torque_x0_G.*sin(pitch_measured_G);
-    torque_L_G = -torque_x0_G.*cos(pitch_measured_G) + torque_y0_G.*sin(pitch_measured_G);
-    torque_D_W = torque_y0_W.*cos(pitch_measured_W) + torque_x0_W.*sin(pitch_measured_W);
-    torque_L_W = -torque_x0_W.*cos(pitch_measured_W) + torque_y0_W.*sin(pitch_measured_W);
-    
-    inertialload_y_G = out(timestep_start:timestep_end,23);
-    flowspeed_measured = abs(out(timestep_start:timestep_end,13));
+    chordMetersG = Parameters.Foils.secondFoil.chord;
+    chordMetersW = Parameters.Foils.firstFoil.chord;
+    spanMetersG = Parameters.Foils.secondFoil.span;
+    spanMetersW = Parameters.Foils.firstFoil.span;
+    heaveMetersCropG = M.heaveMetersG(timestepFirst:timestepLast); 
+    heaveMetersCropW = M.heaveMetersW(timestepFirst:timestepLast); 
+    heaveStarG = heaveMetersCropG/chordMetersG;
+    heaveStarW = heaveMetersCropW/chordMetersW;
+    pitchRadsCropG = (pi/180)*M.pitchDegreesG(timestepFirst:timestepLast); 
+    pitchRadsCropW = (pi/180)*M.pitchDegreesW(timestepFirst:timestepLast); 
+    forcexW = M.forcesNewtonsW(timestepFirst:timestepLast,1);
+    forceyW = M.forcesNewtonsW(timestepFirst:timestepLast,2);
+    forcezW = M.forcesNewtonsW(timestepFirst:timestepLast,3);
+    torquexW = M.forcesNewtonsW(timestepFirst:timestepLast,4);
+    torqueyW = M.forcesNewtonsW(timestepFirst:timestepLast,5);
+    torquezW = M.forcesNewtonsW(timestepFirst:timestepLast,6);
+    forcexG = M.forcesNewtonsG(timestepFirst:timestepLast,1);
+    forceyG = M.forcesNewtonsG(timestepFirst:timestepLast,2);
+    forcezG = M.forcesNewtonsG(timestepFirst:timestepLast,3);
+    torquexG = M.forcesNewtonsG(timestepFirst:timestepLast,4);
+    torqueyG = M.forcesNewtonsG(timestepFirst:timestepLast,5);
+    torquezG = M.forcesNewtonsG(timestepFirst:timestepLast,6);
+    inertiaLoadyFiltG = M.forceInertialLoadG(timestepFirst:timestepLast,1);
+    flowSpeedMetersPerSec = M.flowMetersPerSecondVectrino(timestepFirst:timestepLast,1);
 
-    pitch_velo_G = movmean((1/T)*gradient(squeeze(pitch_measured_G)),100);
-    pitch_accel_G = movmean((1/T)*gradient(squeeze(pitch_velo_G)),100);
-    heave_velo_G = movmean((1/T)*gradient(squeeze(heave_measured_G)),100);
-    heave_accel_G = movmean((1/T)*gradient(squeeze(heave_velo_G)),100);
-    heave_velo_W = movmean((1/T)*gradient(squeeze(heave_measured_W)),100);
-    heave_accel_W = movmean((1/T)*gradient(squeeze(heave_velo_W)),100);
+    % Flow speed statistical quantities
+    flowspeedMetersPerSecMean(iTrial) = mean(flowSpeedMetersPerSec);
+    flowspeedMetersPerSecStddev(iTrial) = std(flowSpeedMetersPerSec);
+    UstarMean(iTrial) = flowspeedMetersPerSecMean(iTrial)/(chordMetersG*freq);
 
-    flowspeed_measured_mean(trial_index) = mean(flowspeed_measured);
-    flowspeed_measured_stdev(trial_index) = std(flowspeed_measured);
-    Ustar_measured_mean(trial_index) = flowspeed_measured_mean(trial_index)/(thcknss*freq);
-
-    f_star_commanded_W(trial_index) = thcknss*freq/flowspeed_measured_mean(trial_index);
-    A_star_commanded_W(trial_index) = (max(heave_commanded_W)-min(heave_commanded_W))/(2*thcknss);
-    A_star_measured_W(trial_index) = (max(heave_measured_W)-min(heave_measured_W))/(2*thcknss);
+    % Forces in flow coordinate system
+    forceDragG = forcexG.*cos(pitchRadsCropG) - forceyG.*sin(pitchRadsCropG);
+    forceLiftG = forceyG.*cos(pitchRadsCropG) + forcexG.*sin(pitchRadsCropG);    
+    forceDragW = forcexW.*cos(pitchRadsCropW) - forceyW.*sin(pitchRadsCropW);
+    forceLiftW = forceyW.*cos(pitchRadsCropW) + forcexW.*sin(pitchRadsCropW);
+    torqueDragG = torqueyG.*cos(pitchRadsCropG) + torquexG.*sin(pitchRadsCropG);
+    torqueLiftG = -torquexG.*cos(pitchRadsCropG) + torqueyG.*sin(pitchRadsCropG);
+    torqueDragW = torqueyW.*cos(pitchRadsCropW) + torquexW.*sin(pitchRadsCropW);
+    torqueLiftW = -torquexW.*cos(pitchRadsCropW) + torqueyW.*sin(pitchRadsCropW);
+    % Velocities and accelerations from position derivatives
+    movemeanPoints = 100;
+    pitchVelocityDegPerSecG = movmean(gradient(squeeze(pitchRadsCropG)*P.sampleRate),movemeanPoints);
+    pitchAccelDegPerSecSqG = movmean(gradient(squeeze(pitchVelocityDegPerSecG)*P.sampleRate),movemeanPoints);
+    heaveVelocityMetersPerSecG = movmean(gradient(squeeze(heaveMetersCropG)*P.sampleRate),movemeanPoints);
+    heaveAccelMetersPerSecSqG = movmean(gradient(squeeze(heaveVelocityMetersPerSecG)*P.sampleRate),movemeanPoints);
+    heaveVelocityMetersPerSecW = movmean(gradient(squeeze(heaveMetersCropW)*P.sampleRate),movemeanPoints);
+    heaveAccelMetersPerSecSqW = movmean(gradient(squeeze(heaveVelocityMetersPerSecW)*P.sampleRate),movemeanPoints);
+    % Dimensionless quantities
+    freqStarCmdW(iTrial) = chordMetersW*freq/flowspeedMetersPerSecMean(iTrial);
+    AmpStarCmdW(iTrial) = (max(trajHeaveMetersW)-min(trajHeaveMetersW))/(2*chordMetersW);
+    AmpStarMeasuredW(iTrial) = (max(heaveMetersCropW)-min(heaveMetersCropW))/(2*chordMetersW);
 %% Filter force data
-    force_L_G_corrected = force_L_G;%+inertialload_y_G;
-    [b,a] = butter(6,10*freq*(2*T),'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
-    force_L_G_corrected_filtered = filtfilt(b,a,squeeze(force_L_G_corrected));
-    force_L_W_corrected_filtered = filtfilt(b,a,squeeze(force_L_W)); 
-    force_D_G_filtered = filtfilt(b,a,squeeze(force_D_G));
-    force_D_W_filtered = filtfilt(b,a,squeeze(force_D_W));
-    torque_D_G_filtered = filtfilt(b,a,squeeze(torque_D_G));
-    torque_D_W_filtered = filtfilt(b,a,squeeze(torque_D_W));
-    torque_L_G_filtered = filtfilt(b,a,squeeze(torque_L_G));
-    torque_L_W_filtered = filtfilt(b,a,squeeze(torque_L_W));
-    torque_z_G_filtered = filtfilt(b,a,squeeze(torque_z0_G));
-    torque_z_W_filtered = filtfilt(b,a,squeeze(torque_z0_W));
-    inertialload_y_G_filtered = filtfilt(b,a,squeeze(inertialload_y_G));
+    forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
+    [b,a] = butter(6,10*freq*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
+    forceLiftFiltG = filtfilt(b,a,squeeze(forceLiftGcorrected));
+    forceLiftFiltW = filtfilt(b,a,squeeze(forceLiftW)); 
+    forceDragFiltG = filtfilt(b,a,squeeze(forceDragG));
+    forceDragFiltW = filtfilt(b,a,squeeze(forceDragW));
+    torqueDragFiltG = filtfilt(b,a,squeeze(torqueDragG));
+    torqueDragFiltW = filtfilt(b,a,squeeze(torqueDragW));
+    torqueLiftFiltG = filtfilt(b,a,squeeze(torqueLiftG));
+    torqueLiftFiltW = filtfilt(b,a,squeeze(torqueLiftW));
+    torquezFiltG = filtfilt(b,a,squeeze(torquezG));
+    torquezFiltW = filtfilt(b,a,squeeze(torquezW));
+    inertiaLoadyFiltG = filtfilt(b,a,squeeze(inertiaLoadyFiltG));
     %% Nondimnesionalize forces and torques using characteristic scales
-    force_scale_G(trial_index) = 0.5*1000*chord_foil*span_foil*flowspeed_measured_mean(trial_index)^2; % for 7.5cm chord foil with 45 cm span
-    force_scale_W(trial_index) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(trial_index)^2;
-    torqueLD_scale_G(trial_index) = force_scale_G(trial_index)*span_foil;
-    torquez_scale_G(trial_index) = force_scale_G(trial_index)*chord_foil;
-    torqueLD_scale_W(trial_index) = force_scale_W(trial_index)*foil.span;
-    torquez_scale_W(trial_index) = force_scale_W(trial_index)*thcknss;
-    liftcoef_G = force_L_G_corrected_filtered/force_scale_G(trial_index);
-    liftcoef_W = force_L_W_corrected_filtered/force_scale_W(trial_index);
-    dragcoef_G = force_D_G_filtered/force_scale_G(trial_index);
-    dragcoef_W = force_D_W_filtered/force_scale_W(trial_index);
-    torqueliftcoef_G = torque_L_G_filtered/torqueLD_scale_G(trial_index);
-    torquedragcoef_G = torque_D_G_filtered/torqueLD_scale_G(trial_index);
-    torquezcoef_G = torque_z_G_filtered/torquez_scale_G(trial_index);
-    torqueliftcoef_W = torque_L_W_filtered/torqueLD_scale_W(trial_index);
-    torquedragcoef_W = torque_D_W_filtered/torqueLD_scale_W(trial_index);
-    torquezcoef_W = torque_z_W_filtered/torquez_scale_W(trial_index);
+    forceScaleG(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^2; % for 7.5cm chord foil with 45 cm span
+    forceScaleW(iTrial) = 0.5*1000*chordMetersW*spanMetersW*flowspeedMetersPerSecMean(iTrial)^2;
+    torqueLDscaleG(iTrial) = forceScaleG(iTrial)*spanMetersG;
+    torquezScaleG(iTrial) = forceScaleG(iTrial)*chordMetersG;
+    torqueLDscaleW(iTrial) = forceScaleW(iTrial)*spanMetersW;
+    torquezScaleW(iTrial) = forceScaleW(iTrial)*chordMetersW;
+    liftCoefG = forceLiftFiltG/forceScaleG(iTrial);
+    liftCoefW = forceLiftFiltW/forceScaleW(iTrial);
+    dragCoefG = forceDragFiltG/forceScaleG(iTrial);
+    dragCoefW = forceDragFiltW/forceScaleW(iTrial);
+    torqueLiftCoefG = torqueLiftFiltG/torqueLDscaleG(iTrial);
+    torqueDragCoefG = torqueDragFiltG/torqueLDscaleG(iTrial);
+    torquezCoefG = torquezFiltG/torquezScaleG(iTrial);
+    torqueLiftCoefW = torqueLiftFiltW/torqueLDscaleW(iTrial);
+    torqueDragCoefW = torqueDragFiltW/torqueLDscaleW(iTrial);
+    torquezCoefW = torquezFiltW/torquezScaleW(iTrial);
 
 %% Calculate power
-    power_scale(trial_index) = 0.5*1000*thcknss*foil.span*flowspeed_measured_mean(trial_index)^3;
-    power_fluid = force_L_W_corrected_filtered .*heave_velo_W;
-    power_damping = 0*heave_velo_W.^2;
-    power_total = power_fluid + power_damping;
-    power_mean(trial_index) = mean(power_fluid);
-    powercoef = power_fluid/power_scale(trial_index);
-    powercoef_mean(trial_index) = power_mean(trial_index)/power_scale(trial_index);
+    powerScale(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^3;
+    powerFluid = forceLiftFiltG .*heaveVelocityMetersPerSecG;
+    powerDamping = 0*heaveVelocityMetersPerSecG.^2;
+    powerTotal = powerFluid + powerDamping;
+    powerMeanG(iTrial) = mean(powerFluid);
+    powerCoefG = powerFluid/powerScale(iTrial);
+    powerCoefMeanG(iTrial) = powerMeanG(iTrial)/powerScale(iTrial);
     
 %% heave spectrum
-    duration = max(time_star/freq)/T;
-    window_duration = round(duration/2); % size of hilbert windows measured in samples
-    overlap = round(0*window_duration);
-    heave_star_hilbert =  hilbert(heave_star_measured_W);
-    [heave_powerspec,f_heave] = pwelch(heave_star_hilbert,window_duration,overlap,[],1/T);
-    [max_power,max_index] = max(10*log10(heave_powerspec));
-    f_heave_dom = f_heave(max_index);
+    duration = max(timeStar/freq)*P.sampleRate;
+    windowDuration = round(duration/2); % size of hilbert windows measured in samples
+    overlap = round(0*windowDuration);
+    heaveStarHilbert =  hilbert(heaveStarG);
+    [heavePowerSpec,freqHeaveSpec] = pwelch(heaveStarHilbert,windowDuration,overlap,[],P.sampleRate);
+    [maxPower,maxIndex] = max(10*log10(heavePowerSpec));
+    freqHeaveDominant = freqHeaveSpec(maxIndex);
 
 
  % force corrected+filtered spectrum using Welch's method
-    duration = round(max(time_star/freq)/T);
-    window_duration = round(duration/2); % size of hilbert windows measured in samples
-    overlap = round(window_duration*1/2);
-    force_hilbert =  hilbert(liftcoef_G);%hilbert(liftcoef_G);
-    [force_powerspec,f_force] = pwelch(force_hilbert,hanning(window_duration),overlap,[],1/T);
-    [max_force_power,max_force_index] = max(10*log10(force_powerspec));
-    f_force_dom = f_force(max_force_index);  
+    duration = round(max(timeStar/freq)*P.sampleRate);
+    windowDuration = round(duration/2); % size of hilbert windows measured in samples
+    overlap = round(windowDuration*1/2);
+    forceHilbert =  hilbert(liftCoefG);%hilbert(liftcoef_G);
+    [forcePowerSpec,freqForceSpec] = pwelch(forceHilbert,hanning(windowDuration),overlap,[],P.sampleRate);
+    [maxForcePower,maxForceIndex] = max(10*log10(forcePowerSpec));
+    freqForceDominant = freqForceSpec(maxForceIndex);  
 %     spacing = (f_force(2)-f_force(1))/f;
 %     findpeaks(10*log10(force_powerspec1/spacing,'MinPeakHeight',max_power-20)
 
@@ -283,38 +286,38 @@ for trial_index = firsttrial:numtrials
 
 %% Plot power spectrum
 if createplotForceSpectrum == 1
-plotTitle = ['Vibrissa behind foil phase diff ',num2str(phase,3),'deg and +/-',num2str(heave2/thcknss,2),'chord'];
+plotTitle = ['Vibrissa behind foil phase diff ',num2str(phaseLagWbehindG,3),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
 plot_PrescribedMotionPowerSpectrum_MATLABin
 end
 %% Plot force and motion
-if (mod(trial_index,1)==0 && trial_index>6*length(phase_vec)+1 && ...
-         trial_index<7*length(phase_vec)+1 && singletrial_analysis==1) || ...
+if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
+         iTrial<7*length(phaseLagWbehindGvec)+1 && singleTrialAnalysis==1) || ...
          createGIF == 0 % only plot every Nth figure
 
     if createplotForcesVsTimeG == 1
 % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Foil w/ heave amplitude ',num2str(heave1/chord_foil),'chord and pitch amplitude ',num2str(pitch1),'deg'];
-    plotForceTorqueDisplacementVsTime(time_star,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        dragcoef_G,power_fluid,torqueliftcoef_G,torquedragcoef_G,torquezcoef_G,num_cyc,...
+    titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW),'chord and pitch amplitude ',num2str(pitchAmpDegW),'deg'];
+    plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropG,heaveStarG,liftCoefG,...
+        dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCycles,...
         titlePlots);
     end
     if createplotForcesVsTimeW==1
 % Plot lift and drag coefficients and heave position for Wallace
-    titlePlots = ['Ell. cyl. downstream w/ heave amplitude ',num2str(heave2/thcknss,2),'thickness and phase diff ',num2str(phase,3),'deg'];
-   plotForceTorqueDisplacementVsTime(time_star,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
-        dragcoef_W,power_fluid,torqueliftcoef_W,torquedragcoef_W,torquezcoef_W,num_cyc,...
+    titlePlots = ['Ell. cyl. downstream w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'thickness and phase diff ',num2str(phaseLagWbehindG,3),'deg'];
+   plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
+        dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCycles,...
         titlePlots);
     end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
-    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
-    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_G,heave_star_measured_G,liftcoef_G,...
-        torquezcoef_G,titlePlots)
+    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegG),'deg and +/-',num2str(heaveAmpMetersW/chordMetersG),'chord'];
+    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freq,pitchRadsCropG,heaveStarG,liftCoefG,...
+        torquezCoefG,titlePlots)
     end
     if createplotForcesVsDisplacementsW==1
-            titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitch1),'deg and +/-',num2str(heave1/chord_foil),'chord'];
-                    plotForceTorqueVsDisplacement(time_star,T,freq,pitch_measured_W,heave_star_measured_W,liftcoef_W,...
-        torquezcoef_W,titlePlots)
+            titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegW),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW),'chord'];
+                    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freq,pitchRadsCropW,heaveStarW,liftCoefW,...
+        torquezCoefW,titlePlots)
     end
 
     if createGIF == 1
@@ -324,16 +327,16 @@ if (mod(trial_index,1)==0 && trial_index>6*length(phase_vec)+1 && ...
     fig = gcf;
     frame = getframe(fig);
         
-    im{gif_index} = frame2im(frame);
-    gif_index = gif_index+1;
+    im{gifIndex} = frame2im(frame);
+    gifIndex = gifIndex+1;
     end
     
-    if manytrial_analysis == 1 % close figures after loading for many trial analysis
+    if manyTrialAnalysis == 1 % close figures after loading for many trial analysis
     close all
     end
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
-%         torquedragcoef_G,torquezcoef_G,power_fluid,num_cyc,titlePlots)
+%         torquedragcoef_G,torquezcoef_G,power_fluid,nCycles,titlePlots)
     end
 end
 %% Save .gif of plots
@@ -371,12 +374,12 @@ v_limit = 0.5;
 figure
 hold on
 % Plot Cp vs. A* and phase12
-powercoef_mean_reshape = reshape(powercoef_mean,length(phase_vec),length(H2star_vec));
-contourf(phase_vec,H2star_vec,powercoef_mean_reshape',120,'LineStyle','none')
+powerCoefMeanReshape = reshape(powerCoefMeanG,length(phaseLagWbehindGvec),length(heaveAmpMetersGvec));
+contourf(phaseLagWbehindGvec,heaveAmpMetersGvec,powerCoefMeanReshape',120,'LineStyle','none')
 clim([-1 0.2])
 colormap(bluewhitered)
 
-contour(phase_vec,H2star_vec,powercoef_mean_reshape',[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
+contour(phaseLagWbehindGvec,heaveAmpMetersGvec,powerCoefMeanReshape',[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
 % scatter(phase_vec,H2star_vec,60,'.','k')
 grid on
 xlabel('Phase between foil and vibrissa (degrees)')
@@ -389,7 +392,7 @@ grid off
 c=colorbar();
 c.Label.String = '{\it C}_P';
 % c.Label.Interpreter = 'Latex';
-plotTitle = ['Ell. cyl. behind foil, foil pitch +/-',num2str(pitch1,3),'deg and +/-',num2str(heave1/chord_foil,2),'chord'];
+plotTitle = ['Ell. cyl. behind foil, foil pitch +/-',num2str(pitchAmpDegG,3),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
 title(plotTitle);
 set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
 
