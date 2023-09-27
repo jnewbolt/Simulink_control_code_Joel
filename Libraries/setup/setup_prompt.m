@@ -1,8 +1,8 @@
-function [Parameters] = setup_prompt()
+function [P] = setup_prompt()
 % default answers
 P.sampleRate = '1000';
-P.firstFoilShape = 'V1';
-P.secondFoilShape = 'None';
+P.foilShapeW = 'V1';
+P.foilShapeG = 'None';
 P.flumeDepthMeters = '0.55';
 P.flumeHertz = '16.0';
 P.foilSeparationMeters = '0.242'; 
@@ -25,7 +25,7 @@ disp(['NOTE: Expected time delay between Gromit and Wallace motions (Gromit lead
     num2str(P.pitchDelayW),' ms']);
 
 % generate prompt window
-prompt = {'Enter the sample rate (in Hertz)','Enter first foil shape (as string): ','Enter second foil shape (as string): ', ...
+prompt = {'Enter the sample rate (in Hertz)','Enter foil shape for Wallace (as string): ','Enter foil shape for Gromit (as string): ', ...
     'Enter Flume water depth (in meters): ', 'Enter anticipated flume frequency (Hz): ',  'Enter foil separation distance (m): ', ...
     'Enter Gromit pitch offset from starting position (deg): ','Enter Gromit heave offset from starting position (m): ',...
     'Enter Wallace pitch offset from homing position (deg): ','Enter Wallace heave offset from homing position (m): ',...
@@ -40,8 +40,8 @@ answer = inputdlg(prompt, 'Experiment configuration', numLines, expCellArray);
 
 % store reponses
 P.sampleRate = str2double(answer{1});
-P.firstFoilShape = char(answer{2});
-P.secondFoilShape = char(answer{3});
+P.foilShapeW = char(answer{2});
+P.foilShapeG = char(answer{3});
 P.flumeDepthMeters = str2double(answer{4});
 P.flumeHertz = str2double(answer{5});
 P.foilSeparationMeters = str2double(answer{6});
@@ -59,7 +59,7 @@ P.wallDistanceLeftMeters = str2double(answer{17});
 P.wallDistanceRightMeters = str2double(answer{18});
 
  % finds properties of the foils selected for the experiment
-P.Foils = foils_database(P.firstFoilShape,P.secondFoilShape);
+P.Foils = foils_database(P.foilShapeW,P.foilShapeG);
 
 % establish save folder
 if P.save2LRS == 'y'
@@ -81,9 +81,7 @@ while strcmp(msg,'Directory already exists.')
     end
     [~, msg, ~] = mkdir(P.dataFolderName);
 end
-folder_name = [P.dataFolderName,'\data'];
-mkdir(folder_name); % for the bias measurements
+folderName = [P.dataFolderName,'\data'];
+mkdir(folderName); % for the bias measurements
 
-% e.offset_home = [e.firstFoilPitchOffsetDegrees, e.firstFoilHeaveOffsetMeters, e.secondFoilPitchOffsetDegrees, e.secondFoilHeaveOffsetMeters];
-Parameters = P;
 end

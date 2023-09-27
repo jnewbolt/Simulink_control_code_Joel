@@ -42,8 +42,8 @@ FoilProps.V1 = struct('chord',0.0535,'thickness',0.0265,'span',0.401,'mass',0.30
 FoilProps.C2 = struct('chord',0.0538,'thickness',0.0538,'span',0.400,'mass',0.598,'shape','Cylindrical','material','ABS');% Joel's cylinder Xometry
 FoilProps.None = 'No 2nd foil';
 
-foils.firstFoil = FoilProps.(foilType1);
-foils.secondFoil = FoilProps.(foilType2);
+foils.foilW = FoilProps.(foilType1);
+foils.foilG = FoilProps.(foilType2);
 
 if exist('print_properties','var')
     if strcmp(print_properties,'y')

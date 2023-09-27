@@ -144,10 +144,10 @@ for iTrial = firstTrial:nTrials
     timeStar = times*freq;
     phase12(iTrial) = phaseLagWbehindG;
 
-    chordMetersG = Parameters.Foils.secondFoil.chord;
-    chordMetersW = Parameters.Foils.firstFoil.chord;
-    spanMetersG = Parameters.Foils.secondFoil.span;
-    spanMetersW = Parameters.Foils.firstFoil.span;
+    chordMetersG = Parameters.Foils.foilG.chord;
+    chordMetersW = Parameters.Foils.foilW.chord;
+    spanMetersG = Parameters.Foils.foilG.span;
+    spanMetersW = Parameters.Foils.foilW.span;
     heaveMetersCropG = M.heaveMetersG(timestepFirst:timestepLast); 
     heaveMetersCropW = M.heaveMetersW(timestepFirst:timestepLast); 
     heaveStarG = heaveMetersCropG/chordMetersG;
