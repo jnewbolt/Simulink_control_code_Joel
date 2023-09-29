@@ -22,8 +22,8 @@ clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW en
 % non-changing parameters
 flowSpeedMetersPerSec = 0.30;
 phaseLagPitchDeg = 90;
-nCycles = 30;
-nTransientCycs = 3;
+nCyclesG = 30;
+nTransientCycsG = 2;
 % variable parameters
 freq = 0.8889; % Frequency in cycles/sec
 freqG = freq; freqW = freq;
@@ -35,6 +35,9 @@ initialPhaseLagWbehindG = 0;
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
 
+% Dependent parameters
+nCyclesW = (freqW/freqG)*nCyclesG;
+nTransientCycsW = (freqW/freqG)*nTransientCycsG;
 nTrials = length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
 iTrial = 1;
 
@@ -66,11 +69,11 @@ for heaveAmpMetersW = heaveAmpMetersWvec
 
         %% Profile generation
         % Generate experiment profiles
-        [~, pprof1] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegG, phaseLagPitchDeg, 0);
-        [~, pprof2] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersG, 0, 0);
-        [~, pprof3] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
-        [~, pprof4] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, heaveAmpMetersW , phaseLagWbehindG, 0);
-        [~, rprof5] = trajectory_experiment(nCycles, freq, Parameters.sampleRate, nTransientCycs, nTransientCycs, 1, 0, 1); % reference signal
+        [~, pprof1] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, pitchAmpDegG, phaseLagPitchDeg, 0);
+        [~, pprof2] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, heaveAmpMetersG, 0, 0);
+        [~, pprof3] = trajectory_experiment(nCyclesW, freqW, Parameters.sampleRate, nTransientCycsW, nTransientCycsW, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
+        [~, pprof4] = trajectory_experiment(nCyclesW, freqW, Parameters.sampleRate, nTransientCycsW, nTransientCycsW, heaveAmpMetersW , phaseLagWbehindG, 0);
+        [~, rprof5] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
