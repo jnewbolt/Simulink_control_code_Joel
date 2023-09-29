@@ -25,8 +25,8 @@ phaseLagPitchDeg = 90;
 nCyclesG = 30;
 nTransientCycsG = 2;
 % variable parameters
-freq = 0.8889; % Frequency in cycles/sec
-freqG = freq; freqW = freq;
+freqW = 0.889;
+freqGvec = freqW; 
 pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
 heaveAmpMetersGvec = 0.05;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
 pitchAmpDegWvec = 10;%10; %70; % 65,75
@@ -35,13 +35,11 @@ initialPhaseLagWbehindG = 0;
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
 
-% Dependent parameters
-nCyclesW = (freqW/freqG)*nCyclesG;
-nTransientCycsW = (freqW/freqG)*nTransientCycsG;
 nTrials = length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
 iTrial = 1;
 
 %% Experimental loop
+for freqG = freqGvec
 for pitchAmpDegG = pitchAmpDegGvec
 for heaveAmpMetersG = heaveAmpMetersGvec
 for pitchAmpDegW = pitchAmpDegWvec
@@ -68,6 +66,9 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         end
 
         %% Profile generation
+        % Dependent parameters
+        nCyclesW = (freqW/freqG)*nCyclesG;
+        nTransientCycsW = (freqW/freqG)*nTransientCycsG;
         % Generate experiment profiles
         [~, pprof1] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, pitchAmpDegG, phaseLagPitchDeg, 0);
         [~, pprof2] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, heaveAmpMetersG, 0, 0);
@@ -157,6 +158,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
     phaseLagWbehindG = phaseLagWbehindG + phaseLagStep;
     iTrial = iTrial+1;
     end
+end
 end
 end
 end
