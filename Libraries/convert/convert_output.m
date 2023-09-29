@@ -50,7 +50,7 @@ M.flowMetersPerSecondVectrino = (rawVoltsVectrino(rangeTimes,:)-2.5)*2/5;
 
 forceSensorMassKilograms = 0.6; % Mass of mount 
 accmeterMetersPerSecondSqPerVolt = 9.81; % Meters per seconds squared per volt
-M.forceInertialLoadG = (forceSensorMassKilograms+P.Foils.firstFoil.mass)*accmeterMetersPerSecondSqPerVolt* ...
+M.forceInertialLoadG = (forceSensorMassKilograms+P.Foils.foilG.mass)*accmeterMetersPerSecondSqPerVolt* ...
     (rawVoltsAccelmeter(rangeTimes,:)-Biases.accmeterVolts); 
 
 end

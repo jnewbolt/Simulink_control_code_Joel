@@ -2,7 +2,7 @@ function [P] = setup_prompt()
 % default answers
 P.sampleRate = '1000';
 P.foilShapeW = 'V1';
-P.foilShapeG = 'None';
+P.foilShapeG = 'V1';
 P.flumeDepthMeters = '0.55';
 P.flumeHertz = '16.0';
 P.foilSeparationMeters = '0.242'; 
