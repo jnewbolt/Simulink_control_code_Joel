@@ -1,21 +1,21 @@
 function [P] = setup_prompt()
 % default answers
 P.sampleRate = '1000';
-P.foilShapeW = 'V1';
+P.foilShapeW = 'AE3';
 P.foilShapeG = 'V1';
 P.flumeDepthMeters = '0.55';
 P.flumeHertz = '16.0';
-P.foilSeparationMeters = '0.242'; 
+P.foilSeparationMeters = '0.75'; 
 P.pitchOffsetDegG = '0';
 P.heaveOffsetMetersG = '0';
-P.pitchOffsetDegW = '181';
+P.pitchOffsetDegW = '183';
 P.heaveOffsetMetersW = '0.23';
-P.temperatureCelsius = '22.77';
+P.temperatureCelsius = '21.72';
 P.pitchAxis = '0.5';
 P.pivFlag = 'n';
 P.filterFlag = 'n';
 P.experimentName = 'Enter descriptive name';
-P.save2LRS = 'y';
+P.save2LRS = 'n';
 P.wallDistanceLeftMeters = '0.4';
 P.wallDistanceRightMeters = '0.4';
 % expected time delay between Gromit and Wallace (Gromit leading motion)

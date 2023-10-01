@@ -28,9 +28,9 @@ nTransientCycsG = 2;
 freqW = 0.889;
 freqGvec = freqW; 
 pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
-heaveAmpMetersGvec = 0.05;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = 10;%10; %70; % 65,75
-heaveAmpMetersWvec = 0.05;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+heaveAmpMetersGvec = 0;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
+pitchAmpDegWvec = (0:1:3);%10; %70; % 65,75
+heaveAmpMetersWvec = (0:0.01:0.03);%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
@@ -101,7 +101,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
         
         %% Run actual experiment
-        freqGain = freq; heaveGain = heaveAmpMetersG; % These values modify the Gromit motor command to get desired plant positions 
+        freqGain = freqG; heaveGain = heaveAmpMetersG; % These values modify the Gromit motor command to get desired plant positions 
         simStatus = 'stopped';
         while strcmp(simStatus,'stopped')
             % clear variables before next experiment
