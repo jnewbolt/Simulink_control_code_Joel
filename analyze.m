@@ -1,8 +1,9 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
+datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib';
 %% Some alternate important data locations:
+% datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
 % trialdir = 'FoilAndCircCyl_D=24,2cm\data\'; namepart1 = '20230524_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
@@ -20,8 +21,8 @@ datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCy
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
-singleTrialAnalysis = 1;
-manyTrialAnalysis = 0;
+singleTrialAnalysis = 0;
+manyTrialAnalysis = 1;
 varyphase = 1;
 varypitch1 = 0;
 
@@ -138,10 +139,10 @@ for iTrial = firstTrial:nTrials
     P = Parameters; M = Measurements;
     % Define timesteps for each subtrial, excluding ramp up/down
     nTimesteps = length(Measurements.pitchDegreesG);
-    timestepFirst = round(nTransientCycs*P.sampleRate/freq)+1;
-    timestepLast = round(nTimesteps-nTransientCycs*P.sampleRate/freq);
+    timestepFirst = round(nTransientCycsG*P.sampleRate/freqG)+1;
+    timestepLast = round(nTimesteps-nTransientCycsG*P.sampleRate/freqG);
     times = (1:timestepLast-timestepFirst+1)/P.sampleRate;
-    timeStar = times*freq;
+    timeStar = times*freqG;
     phase12(iTrial) = phaseLagWbehindG;
 
     chordMetersG = Parameters.Foils.foilG.chord;
@@ -172,7 +173,7 @@ for iTrial = firstTrial:nTrials
     % Flow speed statistical quantities
     flowspeedMetersPerSecMean(iTrial) = mean(flowSpeedMetersPerSec);
     flowspeedMetersPerSecStddev(iTrial) = std(flowSpeedMetersPerSec);
-    UstarMean(iTrial) = flowspeedMetersPerSecMean(iTrial)/(chordMetersG*freq);
+    UstarMean(iTrial) = flowspeedMetersPerSecMean(iTrial)/(chordMetersG*freqG);
 
     % Forces in flow coordinate system
     forceDragG = forcexG.*cos(pitchRadsCropG) - forceyG.*sin(pitchRadsCropG);
@@ -192,12 +193,12 @@ for iTrial = firstTrial:nTrials
     heaveVelocityMetersPerSecW = movmean(gradient(squeeze(heaveMetersCropW)*P.sampleRate),movemeanPoints);
     heaveAccelMetersPerSecSqW = movmean(gradient(squeeze(heaveVelocityMetersPerSecW)*P.sampleRate),movemeanPoints);
     % Dimensionless quantities
-    freqStarCmdW(iTrial) = chordMetersW*freq/flowspeedMetersPerSecMean(iTrial);
+    freqStarCmdW(iTrial) = chordMetersW*freqG/flowspeedMetersPerSecMean(iTrial);
     AmpStarCmdW(iTrial) = (max(trajHeaveMetersW)-min(trajHeaveMetersW))/(2*chordMetersW);
     AmpStarMeasuredW(iTrial) = (max(heaveMetersCropW)-min(heaveMetersCropW))/(2*chordMetersW);
 %% Filter force data
     forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
-    [b,a] = butter(6,10*freq*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
+    [b,a] = butter(6,10*freqG*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
     forceLiftFiltG = filtfilt(b,a,squeeze(forceLiftGcorrected));
     forceLiftFiltW = filtfilt(b,a,squeeze(forceLiftW)); 
     forceDragFiltG = filtfilt(b,a,squeeze(forceDragG));
@@ -237,7 +238,7 @@ for iTrial = firstTrial:nTrials
     powerCoefMeanG(iTrial) = powerMeanG(iTrial)/powerScale(iTrial);
     
 %% heave spectrum
-    duration = max(timeStar/freq)*P.sampleRate;
+    duration = max(timeStar/freqG)*P.sampleRate;
     windowDuration = round(duration/2); % size of hilbert windows measured in samples
     overlap = round(0*windowDuration);
     heaveStarHilbert =  hilbert(heaveStarG);
@@ -247,7 +248,7 @@ for iTrial = firstTrial:nTrials
 
 
  % force corrected+filtered spectrum using Welch's method
-    duration = round(max(timeStar/freq)*P.sampleRate);
+    duration = round(max(timeStar/freqG)*P.sampleRate);
     windowDuration = round(duration/2); % size of hilbert windows measured in samples
     overlap = round(windowDuration*1/2);
     forceHilbert =  hilbert(liftCoefG);%hilbert(liftcoef_G);
@@ -298,25 +299,25 @@ if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
 % Plot lift and drag coefficients and heave position for Gromit
     titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW),'chord and pitch amplitude ',num2str(pitchAmpDegW),'deg'];
     plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropG,heaveStarG,liftCoefG,...
-        dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCycles,...
+        dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCyclesG,...
         titlePlots);
     end
     if createplotForcesVsTimeW==1
 % Plot lift and drag coefficients and heave position for Wallace
     titlePlots = ['Ell. cyl. downstream w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'thickness and phase diff ',num2str(phaseLagWbehindG,3),'deg'];
    plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
-        dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCycles,...
+        dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCyclesG,...
         titlePlots);
     end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
     titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegG),'deg and +/-',num2str(heaveAmpMetersW/chordMetersG),'chord'];
-    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freq,pitchRadsCropG,heaveStarG,liftCoefG,...
+    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
         torquezCoefG,titlePlots)
     end
     if createplotForcesVsDisplacementsW==1
             titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegW),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW),'chord'];
-                    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freq,pitchRadsCropW,heaveStarW,liftCoefW,...
+                    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
         torquezCoefW,titlePlots)
     end
 
@@ -336,7 +337,7 @@ if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
     end
     
 %     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
-%         torquedragcoef_G,torquezcoef_G,power_fluid,nCycles,titlePlots)
+%         torquedragcoef_G,torquezcoef_G,power_fluid,nCyclesG,titlePlots)
     end
 end
 %% Save .gif of plots
