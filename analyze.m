@@ -21,21 +21,22 @@ datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib';
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
-singleTrialAnalysis = 0;
+singleTrialAnalysis = 1;
 manyTrialAnalysis = 1;
-varyphase = 1;
+varyphase = 0;
 varypitch1 = 0;
 
-createplotForcesVsTimeG = 1;
+createplotForcesVsTimeG = 0;
 createplotForcesVsTimeW = 1;
-createplotForcesVsDisplacementsG = 1;
-createplotForcesVsDisplacementsW = 1;
-createplotForceSpectrum = 1;
+createplotForcesVsDisplacementsG = 0;
+createplotForcesVsDisplacementsW = 0;
+createplotForceSpectrum = 0;
 createplotEnergyMap = 0;
 createGIF = 0;
+createVideo = 1;
 
 if manyTrialAnalysis == 0
-    firstTrial = 1;
+    firstTrial = 10;
     nTrials = firstTrial;
 end
 
@@ -79,11 +80,12 @@ end
 
 %% Define the necessary variables in order to pre-allocate memory
 freqStarCmdW = nan(nTrials,1);
-AmpStarCmdW = nan(nTrials,1);
-AmpStarMeasuredW = nan(nTrials,1);
+heaveAmpStarCmdW = nan(nTrials,1);
+heaveAmpStarMeasuredW = nan(nTrials,1);
 phase12 = nan(nTrials,1);
 flowspeedMetersPerSecMean = nan(nTrials,1);
 flowspeedMetersPerSecStddev = nan(nTrials,1);
+UstarMean = nan(nTrials,1);
 powerMeanG = nan(nTrials,1);
 powerCoefMeanG = nan(nTrials,1);
 powerScale = nan(nTrials,1);
@@ -100,6 +102,7 @@ torqueLDscaleG = nan(nTrials,1);
 torquezScaleG = nan(nTrials,1);
 torqueLDscaleW = nan(nTrials,1);
 torquezScaleW = nan(nTrials,1);
+angleOfAttackMaxDegW = nan(nTrials,1);
 gifIndex = 1;
 %% Loop through trials
 
@@ -171,7 +174,7 @@ for iTrial = firstTrial:nTrials
     flowSpeedMetersPerSec = M.flowMetersPerSecondVectrino(timestepFirst:timestepLast,1);
 
     % Flow speed statistical quantities
-    flowspeedMetersPerSecMean(iTrial) = mean(flowSpeedMetersPerSec);
+    flowspeedMetersPerSecMean(iTrial) = abs(mean(flowSpeedMetersPerSec));
     flowspeedMetersPerSecStddev(iTrial) = std(flowSpeedMetersPerSec);
     UstarMean(iTrial) = flowspeedMetersPerSecMean(iTrial)/(chordMetersG*freqG);
 
@@ -194,8 +197,9 @@ for iTrial = firstTrial:nTrials
     heaveAccelMetersPerSecSqW = movmean(gradient(squeeze(heaveVelocityMetersPerSecW)*P.sampleRate),movemeanPoints);
     % Dimensionless quantities
     freqStarCmdW(iTrial) = chordMetersW*freqG/flowspeedMetersPerSecMean(iTrial);
-    AmpStarCmdW(iTrial) = (max(trajHeaveMetersW)-min(trajHeaveMetersW))/(2*chordMetersW);
-    AmpStarMeasuredW(iTrial) = (max(heaveMetersCropW)-min(heaveMetersCropW))/(2*chordMetersW);
+    heaveAmpStarCmdW(iTrial) = (max(trajHeaveMetersW)-min(trajHeaveMetersW))/(2*chordMetersW);
+    heaveAmpStarMeasuredW(iTrial) = (max(heaveMetersCropW)-min(heaveMetersCropW))/(2*chordMetersW);
+    angleOfAttackMaxDegW(iTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
 %% Filter force data
     forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
     [b,a] = butter(6,10*freqG*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
@@ -287,72 +291,72 @@ for iTrial = firstTrial:nTrials
 
 %% Plot power spectrum
 if createplotForceSpectrum == 1
-plotTitle = ['Vibrissa behind foil phase diff ',num2str(phaseLagWbehindG,3),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
+plotTitle = ['Object behind foil phase diff ',num2str(phaseLagWbehindG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
 plot_PrescribedMotionPowerSpectrum_MATLABin
 end
 %% Plot force and motion
-if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
-         iTrial<7*length(phaseLagWbehindGvec)+1 && singleTrialAnalysis==1) || ...
-         createGIF == 0 % only plot every Nth figure
+% if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
+%          iTrial<7*length(phaseLagWbehindGvec)+1 && singleTrialAnalysis==1) || ...
+%          createGIF == 0 % only plot every Nth figure
 
     if createplotForcesVsTimeG == 1
 % Plot lift and drag coefficients and heave position for Gromit
-    titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW),'chord and pitch amplitude ',num2str(pitchAmpDegW),'deg'];
+    titlePlots = ['Object downstream',newline,'w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c} and phase diff ',num2str(phaseLagWbehindG,2),'deg'];
     plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropG,heaveStarG,liftCoefG,...
         dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCyclesG,...
         titlePlots);
     end
     if createplotForcesVsTimeW==1
 % Plot lift and drag coefficients and heave position for Wallace
-    titlePlots = ['Ell. cyl. downstream w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'thickness and phase diff ',num2str(phaseLagWbehindG,3),'deg'];
-   plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
+    titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}',newline,...
+        'and pitch amplitude ',num2str(pitchAmpDegW,2),'deg',newline,...
+        'AoA max = ',num2str(angleOfAttackMaxDegW(iTrial),2),' deg'];
+    plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
         dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCyclesG,...
         titlePlots);
     end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
-    titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegG),'deg and +/-',num2str(heaveAmpMetersW/chordMetersG),'chord'];
-    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
-        torquezCoefG,titlePlots)
+        titlePlots = ['Object behind foil +/-',num2str(pitchAmpDegG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c}'];
+        plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
+            torquezCoefG,titlePlots)
     end
     if createplotForcesVsDisplacementsW==1
-            titlePlots = ['Foil ahead of vibrissa +/-',num2str(pitchAmpDegW),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW),'chord'];
-                    plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
-        torquezCoefW,titlePlots)
+        titlePlots = ['Foil ahead of object +/-',num2str(pitchAmpDegW,2),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}'];
+        plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
+            torquezCoefW,titlePlots)
     end
 
-    if createGIF == 1
-    % Make a gif
-
+    if createVideo == 1
+    % Make video frames from set of figures that are currently being generated
     drawnow
     fig = gcf;
     frame = getframe(fig);
-        
     im{gifIndex} = frame2im(frame);
     gifIndex = gifIndex+1;
     end
-    
     if manyTrialAnalysis == 1 % close figures after loading for many trial analysis
     close all
     end
-    
-%     plotTorqueAndPosition(time_star,pitch_measured_G,heave_star_measured_G,torqueliftcoef_G,...
-%         torquedragcoef_G,torquezcoef_G,power_fluid,nCyclesG,titlePlots)
-    end
+
+% end
 end
-%% Save .gif of plots
-if createGIF == 1
-    filenameGIF = "testAnimated.gif"; % Specify the output file name
+%% Save .mp4 video of plots
+if createVideo == 1
+    filenameVideo = "testVideo.mp4";
     nImages = length(im);
+    v = VideoWriter(filenameVideo,'MPEG-4');
+    v.Quality = 95;
+    v.FrameRate = 2;
+    frameHoldTimeSec = 2;
+    open(v);
     for idx = 1:nImages
-        [A,map] = rgb2ind(im{idx},256);
-        if idx == 1
-            imwrite(A,map,filenameGIF,"gif","LoopCount",Inf,"DelayTime",1);
-        else
-            imwrite(A,map,filenameGIF,"gif","WriteMode","append","DelayTime",1);
-        end
+            for repeatFrame = 1:frameHoldTimeSec*v.FrameRate
+            frame = im{idx};
+            writeVideo(v,frame)
+            end
     end
-    close all
+    close(v);
 end
 %% Plot Power coefficient contour
 % plot_PowerCoefContour_vsphasediffandampl
@@ -383,7 +387,7 @@ colormap(bluewhitered)
 contour(phaseLagWbehindGvec,heaveAmpMetersGvec,powerCoefMeanReshape',[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
 % scatter(phase_vec,H2star_vec,60,'.','k')
 grid on
-xlabel('Phase between foil and vibrissa (degrees)')
+xlabel('Phase between foil and object (degrees)')
 ylabel('{\it A} * = {\it A/d}')
 xlim([-190 180])
 ylim([-0.04 1.12])
@@ -393,7 +397,7 @@ grid off
 c=colorbar();
 c.Label.String = '{\it C}_P';
 % c.Label.Interpreter = 'Latex';
-plotTitle = ['Ell. cyl. behind foil, foil pitch +/-',num2str(pitchAmpDegG,3),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
+plotTitle = ['Object behind foil, foil pitch +/-',num2str(pitchAmpDegG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
 title(plotTitle);
 set(gca,"FontName","Arial"); set(gca,"FontSize",36); set(gca,"LineWidth",2); 
 

@@ -10,7 +10,7 @@ plot(time_star,pitch_measured,'DisplayName','{\it \theta } (rad)','Color','black
 plot(time_star,heave_star_measured,'DisplayName','{\it y/d}','Color','black','LineWidth',4)
 % Plot force coefficients
 plot(time_star,liftcoef,'DisplayName','{\it C}_L','Color','red','LineWidth',4)
-% plot(time_star,dragcoef,'DisplayName','{\it C}_D','Color','blue','LineWidth',4)
+plot(time_star,dragcoef,'DisplayName','{\it C}_D','Color','blue','LineWidth',4)
 % plot(time_star,torqueliftcoef,'DisplayName','{\it C}_{L\tau}','Color',"#A2142F",'LineWidth',4)
 % plot(time_star,torquedragcoef,'DisplayName','{\it C}_{D\tau}','Color',"#0072BD",'LineWidth',4)
 % plot(time_star,torquezcoef,'DisplayName','{\it C}_{z\tau}','Color',"#FF00FF",'LineWidth',4)
