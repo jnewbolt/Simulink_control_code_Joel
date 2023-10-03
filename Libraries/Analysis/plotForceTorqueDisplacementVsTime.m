@@ -6,8 +6,8 @@ hold on
 
 % plot(time_star,zeros(1,length(time_star)),'HandleVisibility','off','Color','#222222','LineWidth',3) % emphasize y=0
 % Plot displacements
-plot(time_star,pitch_measured,'DisplayName','{\it \theta } (rad)','Color','black','LineWidth',4,'LineStyle','--')
-plot(time_star,heave_star_measured,'DisplayName','{\it y/d}','Color','black','LineWidth',4)
+plot(time_star,pitch_measured,'DisplayName','{\it \theta } (rads)','Color',[0.3 0.3 0.3],'LineWidth',4)
+plot(time_star,heave_star_measured,'DisplayName','{\it y/c}','Color','black','LineWidth',4)
 % Plot force coefficients
 plot(time_star,liftcoef,'DisplayName','{\it C}_L','Color','red','LineWidth',4)
 plot(time_star,dragcoef,'DisplayName','{\it C}_D','Color','blue','LineWidth',4)

@@ -1,8 +1,9 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib';
+datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
 %% Some alternate important data locations:
+% datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib3';
 % datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
@@ -109,29 +110,8 @@ gifIndex = 1;
 for iTrial = firstTrial:nTrials
 
 %% Load the requested trial data
-%     if varyphase==0
-%         trialname = [trialfilename,num2str(fvector(ftrial),3),namepart2,num2str(Avector(Atrial),3),'cm.mat'];
-%     elseif varyphase==1
-%         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-%     end
-% 
-%     try
-%         load(trialname,'transient_cycs','out','profs','freq','phase')
-%     catch
-%         disp(['Failed to load ',trialname])
-%     end
-
-%     if varyphase==0
-%         trialname = [trialfilename,num2str(fstarvector(ftrial),3),namepart2,num2str(Astarvector(Atrial),3),'cm.mat'];
-%     elseif varyphase==1
-%         trialname = [trialfilename,num2str(Astarvector(Atrial),3),namepart2,num2str(phase12vector(ftrial)),'deg.mat'];
-%     end
-%     if varypitch1 ==1
-%         trialname = [trialfilename,num2str(fstarvector(ftrial)),namepart2,num2str(Astarvector(Atrial)*chord_foil),namepart3,'.mat'];
-%     end
 
     try
-%         load(trialname,'transient_cycs','out','profs','freq','phase')
         trialname=[dir_fullname,trialfiles(iTrial).name];
         load(trialname);
     catch
