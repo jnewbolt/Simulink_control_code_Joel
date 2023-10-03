@@ -1,9 +1,9 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
+datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib3';
 %% Some alternate important data locations:
-% datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib3';
+% datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
 % datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
 % trialdir = 'FoilAndVib_D=24,2cm\data\'; namepart1 = '20230525_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 % thcknss = 0.0265;  %cross-stream diameter in meters % Is this necessary? Try to remove
@@ -23,7 +23,7 @@ datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
 %%
 %% Type of analysis requested 
 singleTrialAnalysis = 1;
-manyTrialAnalysis = 1;
+manyTrialAnalysis = 0;
 varyphase = 0;
 varypitch1 = 0;
 
@@ -37,7 +37,7 @@ createGIF = 0;
 createVideo = 1;
 
 if manyTrialAnalysis == 0
-    firstTrial = 16;
+    firstTrial = 12;
     nTrials = firstTrial;
 end
 
