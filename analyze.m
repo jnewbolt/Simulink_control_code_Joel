@@ -37,7 +37,7 @@ createGIF = 0;
 createVideo = 1;
 
 if manyTrialAnalysis == 0
-    firstTrial = 10;
+    firstTrial = 16;
     nTrials = firstTrial;
 end
 
@@ -104,7 +104,7 @@ torquezScaleG = nan(nTrials,1);
 torqueLDscaleW = nan(nTrials,1);
 torquezScaleW = nan(nTrials,1);
 angleOfAttackMaxDegW = nan(nTrials,1);
-gifIndex = 1;
+videoIndex = 1;
 %% Loop through trials
 
 for iTrial = firstTrial:nTrials
@@ -239,6 +239,49 @@ for iTrial = firstTrial:nTrials
     [forcePowerSpec,freqForceSpec] = pwelch(forceHilbert,hanning(windowDuration),overlap,[],P.sampleRate);
     [maxForcePower,maxForceIndex] = max(10*log10(forcePowerSpec));
     freqForceDominant = freqForceSpec(maxForceIndex);  
+
+    %% Phase average quantities
+    samplesPerCycW = round(P.sampleRate/freqW);
+    timeStarPhaseAvgW = (0:freqW/P.sampleRate:1);
+    pitchRadsPhaseAvgW = nan(samplesPerCycW,1);
+    pitchRadsPhaseStddevW = nan(samplesPerCycW,1);
+    heaveStarPhaseAvgW = nan(samplesPerCycW,1);
+    heaveStarPhaseStddevW = nan(samplesPerCycW,1);
+    liftCoefPhaseAvgW = nan(samplesPerCycW,1);
+    liftCoefPhaseStddevW = nan(samplesPerCycW,1);
+    dragCoefPhaseAvgW =nan(samplesPerCycW,1);
+    dragCoefStddevW = nan(samplesPerCycW,1);
+        for iSample = 1:samplesPerCycW
+        pitchRadsPhaseAvgW(iSample) = mean(pitchRadsCropW(iSample:samplesPerCycW:end));
+        pitchRadsPhaseStddevW(iSample) = std(pitchRadsCropW(iSample:samplesPerCycW:end));
+        heaveStarPhaseAvgW(iSample) = mean(heaveStarW(iSample:samplesPerCycW:end));
+        heaveStarPhaseStddevW(iSample) = std(heaveStarW(iSample:samplesPerCycW:end));
+        liftCoefPhaseAvgW(iSample) = mean(liftCoefW(iSample:samplesPerCycW:end));
+        liftCoefPhaseStddevW(iSample) = std(liftCoefW(iSample:samplesPerCycW:end));
+        dragCoefPhaseAvgW(iSample) = mean(dragCoefW(iSample:samplesPerCycW:end));
+        dragCoefStddevW(iSample) = std(dragCoefW(iSample:samplesPerCycW:end));
+        end
+    samplesPerCycG = round(P.sampleRate/freqG);
+    timeStarPhaseAvgG = (0:freqG/P.sampleRate:1);
+    pitchRadsPhaseAvgG = nan(samplesPerCycG,1);
+    pitchRadsPhaseStddevG = nan(samplesPerCycG,1);
+    heaveStarPhaseAvgG = nan(samplesPerCycG,1);
+    heaveStarPhaseStddevG = nan(samplesPerCycG,1);
+    liftCoefPhaseAvgG = nan(samplesPerCycG,1);
+    liftCoefPhaseStddevG = nan(samplesPerCycG,1);
+    dragCoefPhaseAvgG =nan(samplesPerCycG,1);
+    dragCoefStddevG = nan(samplesPerCycG,1);
+        for iSample = 1:samplesPerCycG
+        pitchRadsPhaseAvgG(iSample) = mean(pitchRadsCropG(iSample:samplesPerCycG:end));
+        pitchRadsPhaseStddevG(iSample) = std(pitchRadsCropG(iSample:samplesPerCycG:end));
+        heaveStarPhaseAvgG(iSample) = mean(heaveStarG(iSample:samplesPerCycG:end));
+        heaveStarPhaseStddevG(iSample) = std(heaveStarG(iSample:samplesPerCycG:end));
+        liftCoefPhaseAvgG(iSample) = mean(liftCoefG(iSample:samplesPerCycG:end));
+        liftCoefPhaseStddevG(iSample) = std(liftCoefG(iSample:samplesPerCycG:end));
+        dragCoefPhaseAvgG(iSample) = mean(dragCoefG(iSample:samplesPerCycG:end));
+        dragCoefStddevG(iSample) = std(dragCoefG(iSample:samplesPerCycG:end));
+        end
+    %%
 %     spacing = (f_force(2)-f_force(1))/f;
 %     findpeaks(10*log10(force_powerspec1/spacing,'MinPeakHeight',max_power-20)
 
@@ -282,18 +325,26 @@ end
     if createplotForcesVsTimeG == 1
 % Plot lift and drag coefficients and heave position for Gromit
     titlePlots = ['Object downstream',newline,'w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c} and phase diff ',num2str(phaseLagWbehindG,2),'deg'];
-    plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropG,heaveStarG,liftCoefG,...
-        dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCyclesG,...
-        titlePlots);
+%     plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropG,heaveStarG,liftCoefG,...
+%         dragCoefG,powerFluid,torqueLiftCoefG,torqueDragCoefG,torquezCoefG,nCyclesG,...
+%         titlePlots);
+    plot_forces_vs_time_bounded(timeStarPhaseAvgG,pitchRadsPhaseAvgG,pitchRadsPhaseStddevG,...
+        heaveStarPhaseAvgG,heaveStarPhaseStddevG,...
+        liftCoefPhaseAvgG,liftCoefPhaseStddevG,dragCoefPhaseAvgG,dragCoefStddevG,...
+        powerFluid,nCyclesG,titlePlots);
     end
     if createplotForcesVsTimeW==1
 % Plot lift and drag coefficients and heave position for Wallace
     titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}',newline,...
         'and pitch amplitude ',num2str(pitchAmpDegW,2),'deg',newline,...
         'AoA max = ',num2str(angleOfAttackMaxDegW(iTrial),2),' deg'];
-    plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
-        dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCyclesG,...
-        titlePlots);
+%     plotForceTorqueDisplacementVsTime(timeStar,pitchRadsCropW,heaveStarW,liftCoefW,...
+%         dragCoefW,powerFluid,torqueLiftCoefW,torqueDragCoefW,torquezCoefW,nCyclesG,...
+%         titlePlots);
+    plot_forces_vs_time_bounded(timeStarPhaseAvgW,pitchRadsPhaseAvgW,pitchRadsPhaseStddevW,...
+        heaveStarPhaseAvgW,heaveStarPhaseStddevW,...
+        liftCoefPhaseAvgW,liftCoefPhaseStddevW,dragCoefPhaseAvgW,dragCoefStddevW,...
+        powerFluid,nCyclesG,titlePlots);
     end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
@@ -312,8 +363,8 @@ end
     drawnow
     fig = gcf;
     frame = getframe(fig);
-    im{gifIndex} = frame2im(frame);
-    gifIndex = gifIndex+1;
+    im{videoIndex} = frame2im(frame);
+    videoIndex = videoIndex+1;
     end
     if manyTrialAnalysis == 1 % close figures after loading for many trial analysis
     close all
