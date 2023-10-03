@@ -27,11 +27,12 @@ manyTrialAnalysis = 0;
 varyphase = 0;
 varypitch1 = 0;
 
-createplotForcesVsTimeG = 0;
+createplotForcesVsTimeG = 1;
 createplotForcesVsTimeW = 1;
 createplotForcesVsDisplacementsG = 0;
 createplotForcesVsDisplacementsW = 0;
-createplotForceSpectrum = 0;
+createplotForceSpectrumG = 0;
+createplotForceSpectrumW = 1;
 createplotEnergyMap = 0;
 createGIF = 0;
 createVideo = 1;
@@ -125,7 +126,8 @@ for iTrial = firstTrial:nTrials
     timestepFirst = round(nTransientCycsG*P.sampleRate/freqG)+1;
     timestepLast = round(nTimesteps-nTransientCycsG*P.sampleRate/freqG);
     times = (1:timestepLast-timestepFirst+1)/P.sampleRate;
-    timeStar = times*freqG;
+    timeStarG = times*freqG;
+    timeStarW = times*freqW;
     phase12(iTrial) = phaseLagWbehindG;
 
     chordMetersG = Parameters.Foils.foilG.chord;
@@ -221,25 +223,60 @@ for iTrial = firstTrial:nTrials
     powerCoefG = powerFluid/powerScale(iTrial);
     powerCoefMeanG(iTrial) = powerMeanG(iTrial)/powerScale(iTrial);
     
-%% heave spectrum
-    duration = max(timeStar/freqG)*P.sampleRate;
-    windowDuration = round(duration/2); % size of hilbert windows measured in samples
-    overlap = round(0*windowDuration);
-    heaveStarHilbert =  hilbert(heaveStarG);
-    [heavePowerSpec,freqHeaveSpec] = pwelch(heaveStarHilbert,windowDuration,overlap,[],P.sampleRate);
-    [maxPower,maxIndex] = max(10*log10(heavePowerSpec));
-    freqHeaveDominant = freqHeaveSpec(maxIndex);
+%% Spectrum analysis
+    %Gromit Heave spectrum
+    durationG = max(timeStarG/freqG)*P.sampleRate;
+    windowDurationG = round(durationG/2); % size of hilbert windows measured in samples
+    overlapG = round(0*windowDurationG);
+    heaveHilbertG =  hilbert(heaveStarG);
+    [heaveSpecPowerG,heaveSpecFreqG] = pwelch(heaveHilbertG,windowDurationG,overlapG,[],P.sampleRate);
+    [maxHeavePowerG,maxHeavePowerIndexG] = max(10*log10(heaveSpecPowerG));
+    freqHeaveDominantG = heaveSpecFreqG(maxHeavePowerIndexG);
 
+    % Wallace Heave spectrum
+    durationW = max(timeStarW/freqW)*P.sampleRate;
+    windowDurationW = round(durationW/2); % size of hilbert windows measured in samples
+    overlapW = round(0*windowDurationW);
+    heaveStarHilbertW =  hilbert(heaveStarW);
+    [heaveSpecPowerW,heaveSpecFreqW] = pwelch(heaveStarHilbertW,windowDurationW,overlapW,[],P.sampleRate);
+    [maxHeavePowerW,maxHeavePowerIndexW] = max(10*log10(heaveSpecPowerW));
+    freqHeaveDominantW = heaveSpecFreqW(maxHeavePowerIndexW);
+
+    %Gromit Pitch spectrum
+    durationG = max(timeStarG/freqG)*P.sampleRate;
+    windowDurationG = round(durationG/2); % size of hilbert windows measured in samples
+    overlapG = round(0*windowDurationG);
+    pitchHilbertG =  hilbert(pitchRadsCropG);
+    [pitchSpecPowerG,pitchSpecFreqG] = pwelch(pitchHilbertG,windowDurationG,overlapG,[],P.sampleRate);
+    [maxPitchPowerG,maxPitchPowerIndexG] = max(10*log10(pitchSpecPowerG));
+    freqPitchDominantG = pitchSpecFreqG(maxPitchPowerIndexG);
+
+    %Wallace pitch spectrum
+    durationW = max(timeStarW/freqW)*P.sampleRate;
+    windowDurationW = round(durationW/2); % size of hilbert windows measured in samples
+    overlapW = round(0*windowDurationW);
+    pitchHilbertW =  hilbert(pitchRadsCropW);
+    [pitchSpecPowerW,pitchSpecFreqW] = pwelch(pitchHilbertW,windowDurationW,overlapW,[],P.sampleRate);
+    [maxPitchPowerW,maxPitchPowerIndexW] = max(10*log10(pitchSpecPowerW));
+    freqPitchDominantW = pitchSpecFreqW(maxPitchPowerIndexW);
 
  % force corrected+filtered spectrum using Welch's method
-    duration = round(max(timeStar/freqG)*P.sampleRate);
-    windowDuration = round(duration/2); % size of hilbert windows measured in samples
-    overlap = round(windowDuration*1/2);
-    forceHilbert =  hilbert(liftCoefG);%hilbert(liftcoef_G);
-    [forcePowerSpec,freqForceSpec] = pwelch(forceHilbert,hanning(windowDuration),overlap,[],P.sampleRate);
-    [maxForcePower,maxForceIndex] = max(10*log10(forcePowerSpec));
-    freqForceDominant = freqForceSpec(maxForceIndex);  
-
+    durationG = round(max(timeStarG/freqG)*P.sampleRate);
+    windowDurationG = round(durationG/2); % size of hilbert windows measured in samples
+    overlapG = round(windowDurationG*1/2);
+    forceHilbertG =  hilbert(liftCoefG);%hilbert(liftcoef_G);
+    [forcePowerSpecG,freqForceSpecG] = pwelch(forceHilbertG,hanning(windowDurationG),overlapG,[],P.sampleRate);
+    [maxForcePowerG,maxForceIndexG] = max(10*log10(forcePowerSpecG));
+    freqForceDominantG = freqForceSpecG(maxForceIndexG);  
+ % force corrected+filtered spectrum using Welch's method
+    durationW = round(max(timeStarW/freqW)*P.sampleRate);
+    windowDurationW = round(durationW/2); % size of hilbert windows measured in samples
+    overlapW = round(windowDurationW*1/2);
+    forceHilbertW =  hilbert(liftCoefW);%hilbert(liftcoef_W);
+    [forcePowerSpecW,freqForceSpecW] = pwelch(forceHilbertW,hanning(windowDurationW),overlapW,[],P.sampleRate);
+    [maxForcePowerW,maxForceIndexW] = max(10*log10(forcePowerSpecW));
+    freqForceDominantW = freqForceSpecW(maxForceIndexW);  
+    
     %% Phase average quantities
     samplesPerCycW = round(P.sampleRate/freqW);
     timeStarPhaseAvgW = (0:freqW/P.sampleRate:1);
@@ -313,9 +350,16 @@ for iTrial = firstTrial:nTrials
 %     num_forcespecpeaks = size(forcespec_peaklocs,1);
 
 %% Plot power spectrum
-if createplotForceSpectrum == 1
-plotTitle = ['Object behind foil phase diff ',num2str(phaseLagWbehindG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
-plot_PrescribedMotionPowerSpectrum_MATLABin
+if createplotForceSpectrumG == 1
+    plotTitle = ['Object behind foil phase diff ',num2str(phaseLagWbehindG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
+    % plot_PrescribedMotionPowerSpectrum_MATLABin
+    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersG,freqG,freqForceSpecG,forcePowerSpecG,plotTitle)
+end
+if createplotForceSpectrumW == 1
+    plotTitle = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}',newline,...
+        'and pitch amplitude ',num2str(pitchAmpDegW,2),'deg',newline,...
+        'AoA max = ',num2str(angleOfAttackMaxDegW(iTrial),2),' deg'];% plot_PrescribedMotionPowerSpectrum_MATLABin
+    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersW,freqW,freqForceSpecW,forcePowerSpecW,plotTitle)
 end
 %% Plot force and motion
 % if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
@@ -349,12 +393,12 @@ end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
         titlePlots = ['Object behind foil +/-',num2str(pitchAmpDegG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c}'];
-        plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
+        plotForceTorqueVsDisplacement(timeStarG,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
             torquezCoefG,titlePlots)
     end
     if createplotForcesVsDisplacementsW==1
         titlePlots = ['Foil ahead of object +/-',num2str(pitchAmpDegW,2),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}'];
-        plotForceTorqueVsDisplacement(timeStar,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
+        plotForceTorqueVsDisplacement(timeStarG,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
             torquezCoefW,titlePlots)
     end
 
