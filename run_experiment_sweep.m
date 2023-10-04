@@ -20,17 +20,16 @@ clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW en
 
 %% Sweep parameters
 % non-changing parameters
-flowSpeedMetersPerSec = 0.30;
 phaseLagPitchDeg = 90;
 nCyclesG = 30;
 nTransientCycsG = 2;
 % variable parameters
-freqW = 0.889;
+freqW = 0.89;
 freqGvec = freqW; 
 pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
 heaveAmpMetersGvec = 0;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = (0:1:3);%10; %70; % 65,75
-heaveAmpMetersWvec = (0:0.01:0.03);%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+pitchAmpDegWvec = (0:10:20);%10; %70; % 65,75
+heaveAmpMetersWvec = 0.03;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
 phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);

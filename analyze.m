@@ -1,7 +1,7 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib3';
+datadir = 'D:\Experiments\Data\FoilAndVib4';%
 %% Some alternate important data locations:
 % datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
 % datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
@@ -27,7 +27,7 @@ manyTrialAnalysis = 0;
 varyphase = 0;
 varypitch1 = 0;
 
-createplotForcesVsTimeG = 1;
+createplotForcesVsTimeG = 0;
 createplotForcesVsTimeW = 1;
 createplotForcesVsDisplacementsG = 0;
 createplotForcesVsDisplacementsW = 0;
@@ -35,10 +35,10 @@ createplotForceSpectrumG = 0;
 createplotForceSpectrumW = 1;
 createplotEnergyMap = 0;
 createGIF = 0;
-createVideo = 1;
+createVideo = 0;
 
 if manyTrialAnalysis == 0
-    firstTrial = 12;
+    firstTrial = 1;
     nTrials = firstTrial;
 end
 
@@ -170,11 +170,13 @@ for iTrial = firstTrial:nTrials
     torqueDragW = torqueyW.*cos(pitchRadsCropW) + torquexW.*sin(pitchRadsCropW);
     torqueLiftW = -torquexW.*cos(pitchRadsCropW) + torqueyW.*sin(pitchRadsCropW);
     % Velocities and accelerations from position derivatives
-    movemeanPoints = 100;
+    movemeanPoints = 20;
     pitchVelocityDegPerSecG = movmean(gradient(squeeze(pitchRadsCropG)*P.sampleRate),movemeanPoints);
     pitchAccelDegPerSecSqG = movmean(gradient(squeeze(pitchVelocityDegPerSecG)*P.sampleRate),movemeanPoints);
     heaveVelocityMetersPerSecG = movmean(gradient(squeeze(heaveMetersCropG)*P.sampleRate),movemeanPoints);
     heaveAccelMetersPerSecSqG = movmean(gradient(squeeze(heaveVelocityMetersPerSecG)*P.sampleRate),movemeanPoints);
+    pitchVelocityDegPerSecW = movmean(gradient(squeeze(pitchRadsCropW)*P.sampleRate),movemeanPoints);
+    pitchAccelDegPerSecSqW = movmean(gradient(squeeze(pitchVelocityDegPerSecW)*P.sampleRate),movemeanPoints);
     heaveVelocityMetersPerSecW = movmean(gradient(squeeze(heaveMetersCropW)*P.sampleRate),movemeanPoints);
     heaveAccelMetersPerSecSqW = movmean(gradient(squeeze(heaveVelocityMetersPerSecW)*P.sampleRate),movemeanPoints);
     % Dimensionless quantities
@@ -184,7 +186,8 @@ for iTrial = firstTrial:nTrials
     angleOfAttackMaxDegW(iTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
 %% Filter force data
     forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
-    [b,a] = butter(6,10*freqG*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
+    freqCutoff = 10*freqG;
+    [b,a] = butter(6,freqCutoff*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
     forceLiftFiltG = filtfilt(b,a,squeeze(forceLiftGcorrected));
     forceLiftFiltW = filtfilt(b,a,squeeze(forceLiftW)); 
     forceDragFiltG = filtfilt(b,a,squeeze(forceDragG));
@@ -197,7 +200,7 @@ for iTrial = firstTrial:nTrials
     torquezFiltW = filtfilt(b,a,squeeze(torquezW));
     inertiaLoadyFiltG = filtfilt(b,a,squeeze(inertiaLoadyFiltG));
     %% Nondimnesionalize forces and torques using characteristic scales
-    forceScaleG(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^2; % for 7.5cm chord foil with 45 cm span
+    forceScaleG(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^2; 
     forceScaleW(iTrial) = 0.5*1000*chordMetersW*spanMetersW*flowspeedMetersPerSecMean(iTrial)^2;
     torqueLDscaleG(iTrial) = forceScaleG(iTrial)*spanMetersG;
     torquezScaleG(iTrial) = forceScaleG(iTrial)*chordMetersG;
@@ -279,7 +282,7 @@ for iTrial = firstTrial:nTrials
     
     %% Phase average quantities
     samplesPerCycW = round(P.sampleRate/freqW);
-    timeStarPhaseAvgW = (0:freqW/P.sampleRate:1);
+    timeStarPhaseAvgW = (1/samplesPerCycW:1/samplesPerCycW:1);
     pitchRadsPhaseAvgW = nan(samplesPerCycW,1);
     pitchRadsPhaseStddevW = nan(samplesPerCycW,1);
     heaveStarPhaseAvgW = nan(samplesPerCycW,1);
@@ -411,7 +414,7 @@ end
     videoIndex = videoIndex+1;
     end
     if manyTrialAnalysis == 1 % close figures after loading for many trial analysis
-    close all
+%     close all
     end
 
 % end

@@ -30,7 +30,8 @@ plot(timeStarPhaseAvg,dragCoefPhaseAvg,'DisplayName','{\it C}_D','Color','blue',
 
 hold off
 
-legend()
+lgd = legend();
+lgd.Location = "southeast";
 ylim([-3 3])
 xlim([0 1])
 xlabel('Time (cycles)')
