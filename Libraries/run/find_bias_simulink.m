@@ -5,7 +5,7 @@
 sampleTime = 1/Parameters.sampleRate;
 %% Stationary command profiles
 % Zero motion profile
-trajDuration = 20; % length of time of bias measurement in seconds
+trajDuration = 5; % length of time of bias measurement in seconds
 trajStationary = zeros(trajDuration*Parameters.sampleRate,1);
 
 trajPitchDegreesG = trajStationary+MotorPositions.endPitchDegG;
@@ -65,19 +65,19 @@ disp('Done')
 rangeTimes = find(refSig);
 rangeTimes = rangeTimes(1000:end);
 
-Biases.forceVoltsW = mean(rawForceVoltsW(rangeTimes,:),1);
-Biases.forceVoltsStdevW = std(rawForceVoltsW(rangeTimes,:),1);
+BiasesNow.forceVoltsW = mean(rawForceVoltsW(rangeTimes,:),1);
+BiasesNow.forceVoltsStdevW = std(rawForceVoltsW(rangeTimes,:),1);
 
-Biases.forceVoltsG = mean(rawForceVoltsG(rangeTimes,:),1);
-Biases.forceVoltsStdevG = std(rawForceVoltsG(rangeTimes,:),1);
+BiasesNow.forceVoltsG = mean(rawForceVoltsG(rangeTimes,:),1);
+BiasesNow.forceVoltsStdevG = std(rawForceVoltsG(rangeTimes,:),1);
 
-Biases.accmeterVolts = mean(rawVoltsAccelmeter(rangeTimes,:),1);
-Biases.accmeterVoltsStdev = std(rawVoltsAccelmeter(rangeTimes,:),1);
+BiasesNow.accmeterVolts = mean(rawVoltsAccelmeter(rangeTimes,:),1);
+BiasesNow.accmeterVoltsStdev = std(rawVoltsAccelmeter(rangeTimes,:),1);
 
     %% Convert output
 
 rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, Parameters);
+Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, BiasesNow, rangeTimes, Parameters);
 
 %     %% Plot results
 % 
@@ -105,8 +105,8 @@ Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVo
 %     
 %% Raise warnings for potentially faulty measurements
 
-if Biases.accmeterVolts < 1.5 || Biases.accmeterVolts > 1.8
-    disp(['Warning: Accelerometer voltage, ', num2str(Biases.accmeterVolts,2), ' Volts, is outside expected range. Try power cycling.'])
+if BiasesNow.accmeterVolts < 1.5 || BiasesNow.accmeterVolts > 1.8
+    disp(['Warning: Accelerometer voltage, ', num2str(BiasesNow.accmeterVolts,2), ' Volts, is outside expected range. Try power cycling.'])
 end
 
 % Biases.forceVoltsRMSEW = sqrt(mean((rawForceVoltsW- repmat(Biases.forceVoltsW,numel(rawForceVoltsW(:,1)),1)).^2));
@@ -135,13 +135,13 @@ if numBiasFiles == 0
     filename = [dataFolderName,'\BiasesNoLoad_BeforeFindZeroPitch'];
 elseif numBiasFiles == 1
     filename = [dataFolderName,'\BiasesNoLoad_0'];
-    Biases.NoLoad0 = Biases;
+    Biases.NoLoad0 = BiasesNow;
 elseif numBiasFiles == 2
     filename = [dataFolderName,'\BiasesLoaded_0'];
-    Biases.Loaded0 = Biases;
+    Biases.Loaded0 = BiasesNow;
 else
     filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles-2)];
-    Biases.Loaded = Biases;
+    Biases.Loaded = BiasesNow;
 end
 save(filename);
 

@@ -26,7 +26,7 @@ pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Measurements Biases MotorPositions
+clearvars -except Parameters Biases MotorPositions
 
 %% Find zero pitch
 answer = input(['Run "find_zero_pitch" for Gromit? y/n + Enter', newline],"s");
@@ -37,7 +37,7 @@ switch answer
     pause
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-    clearvars -except Parameters Biases Measurements MotorPositions
+    clearvars -except Parameters Biases MotorPositions
 
 end
 
@@ -49,9 +49,9 @@ switch answer
     pause
     % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-    clearvars -except Parameters Biases Measurements MotorPositions
+    clearvars -except Parameters Biases MotorPositions
 end
-    clearvars -except Parameters Biases Measurements MotorPositions
+    clearvars -except Parameters Biases MotorPositions
     
 %% Move to new start positions based on find zero pitch
 disp('The traverses will be moved to their zero-pitch positions.')
