@@ -8,9 +8,6 @@ rampTime = 5; % ramp time in seconds
 [~, rampPitchW] = ramp_fn(rampTime,startPitchDegW, MotorPositions.endPitchDegW, Parameters.sampleRate);
 [rampTimesVector, rampHeaveW] = ramp_fn(rampTime,startHeaveMetersW, MotorPositions.endHeaveMetersW, Parameters.sampleRate);
 
-% plot trajectories
-plot_profiles(Parameters,rampPitchW,rampHeaveW,rampPitchG,rampHeaveG);
-
 % convert into time series to be output to simulink
 pitchDegreesG = timeseries(rampPitchG,rampTimesVector);
 heaveMetersG = timeseries(rampHeaveG,rampTimesVector);
@@ -21,6 +18,9 @@ syncSig = timeseries(zeros(size(rampPitchG)),rampTimesVector);
 % simulation time
 simTime = ceil(rampTimesVector(end))+2;
 disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
+
+% plot trajectories
+plot_profiles(rampTimesVector,rampPitchW,rampHeaveW,rampPitchG,rampHeaveG);
 
 % pass parameters for gromit heave gain in simulation
 freqGain = 0; heaveGain = 0;
@@ -37,12 +37,12 @@ while strcmp(simStatus,'stopped')
     set_param('simulink_traverse_control','SimulationCommand','start');
     simStatus = get_param('simulink_traverse_control','SimulationStatus');
     disp('Running traverse...')
-    pause(simTime+5);
+    pause(simTime+2);
 %     disp('Acquiring data...')
     while ~exist('refSig','var')
             simStatus = get_param('simulink_traverse_control','SimulationStatus');
-            pause(5)
             disp('Loading...')
+            pause(5)
             if strcmp(simStatus,'stopped') % Break out if the trial is taking unexpectedly long to avoid hanging on failure to build model
                 delete('SimulationCache\simulink_traverse_control.slxc')
                 disp('Model failed to run.  Deleting cache (.slxc) and trying again.')

@@ -1,6 +1,6 @@
 %% plot profiles
 
-function plot_profiles(P,arg1, arg2, arg3, arg4, arg5)
+function plot_profiles(rampTimes,arg1, arg2, arg3, arg4, arg5)
 
     if size(arg1,2) == 5
     % trajectories all in one array including reference signal
@@ -28,22 +28,21 @@ function plot_profiles(P,arg1, arg2, arg3, arg4, arg5)
         data_ref = arg5;
         end
     end
-    timeSeconds = linspace(1,length(data_p1),length(data_p1))'/P.sampleRate;
     
     figure
     subplot(2,1,1)
-    plot(timeSeconds,data_p1); hold on;
-    plot(timeSeconds,data_p2);
-    plot(timeSeconds,data_ref*270,'r--'); hold off;
+    plot(rampTimes,data_p1); hold on;
+    plot(rampTimes,data_p2);
+    plot(rampTimes,data_ref*270,'r--'); hold off;
     ylim([-90,270])
     xlabel('time (seconds)')
     ylabel('degrees')
     legend('pitch 1', 'pitch 2', 'ref')
 
     subplot(2,1,2)
-    plot(timeSeconds,data_h1); hold on;
-    plot(timeSeconds,data_h2);
-    plot(timeSeconds,data_ref,'r--'); hold off;
+    plot(rampTimes,data_h1); hold on;
+    plot(rampTimes,data_h2);
+    plot(rampTimes,data_ref,'r--'); hold off;
     ylim([-0.15,0.4])
     xlabel('time (seconds)')
     ylabel('meters')

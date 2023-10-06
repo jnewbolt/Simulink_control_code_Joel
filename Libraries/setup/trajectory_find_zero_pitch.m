@@ -1,7 +1,7 @@
-function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(P,MPs, scanTime, ...
+function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(sampleRate,MPs, scanTime, ...
     pitchAmpDeg, traverse)
         
-    T = 1/P.sampleRate; % define timestep in seconds
+    T = 1/sampleRate; % define timestep in seconds
 
     % pitch motion profile will be constructed in steps:
     % a: move from zero to starting position
@@ -47,7 +47,7 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
 
     
     % convert into time series to be output to simulink
-    times = (0:size(profs,1)-1)'/P.sampleRate; % time vector to create time series objects
+    times = (0:size(profs,1)-1)'/sampleRate; % time vector to create time series objects
     pitchDegreesG = timeseries(profs(:,1),times);
     heaveMetersG = timeseries(profs(:,2),times);
     pitchDegreesW = timeseries(profs(:,3),times);
@@ -55,6 +55,6 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     syncSig = timeseries(profs(:,5),times);
 
     % plot trajectories
-    plot_profiles(P,profs(:,3),profs(:,4),profs(:,1),profs(:,2),profs(:,5));
+    plot_profiles(times,profs(:,3),profs(:,4),profs(:,1),profs(:,2),profs(:,5));
 
 end

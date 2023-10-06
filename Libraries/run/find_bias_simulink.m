@@ -15,9 +15,6 @@ trajHeaveMetersW = trajStationary+MotorPositions.endHeaveMetersW;
 % reference signal - has 0 for ramps and delays and 1 for usable data
 trajRefSig = ones(size(trajStationary));
 
-% plot trajectories
-plot_profiles(Parameters,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
-
 % convert into time series to be output to simulink
 times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
 pitchDegreesG = timeseries(trajPitchDegreesG,times);
@@ -29,6 +26,9 @@ syncSig = timeseries(trajRefSig,times);
 % simulation time
 simTime = ceil(times(end))+2;
 disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
+
+% plot trajectories
+plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
 
 % pass parameters for gromit heave gain in simulation
 freqGain = 0; heaveGain = 0;
