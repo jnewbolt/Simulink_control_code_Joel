@@ -13,12 +13,12 @@ disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure MOTORS ARE ON with CLEARANCE to move, then press any key to continue.'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(0,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
-[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(0,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(0,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(0,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters MotorPositions
 
 %% Unloaded bias measurement
 disp(['Finding UNLOADED BIAS. Ensure flume is OFF.',newline,'Press any key to continue.'])
@@ -26,7 +26,7 @@ pause()
 
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Measurements Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Measurements Biases MotorPositions
 
 %% Find zero pitch
 answer = input(['Run "find_zero_pitch" for Gromit? y/n + Enter', newline],"s");
@@ -37,7 +37,7 @@ switch answer
     pause
 % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-    clearvars -except Parameters Biases Measurements  endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+    clearvars -except Parameters Biases Measurements MotorPositions
 
 end
 
@@ -49,42 +49,42 @@ switch answer
     pause
     % Run find_zero_pitch_simulink.m script, then clear temporary variables from the workspace
     run('find_zero_pitch_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-    clearvars -except Parameters Biases Measurements endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+    clearvars -except Parameters Biases Measurements MotorPositions
 end
-    clearvars -except Parameters Biases Measurements endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+    clearvars -except Parameters Biases Measurements MotorPositions
     
 %% Move to new start positions based on find zero pitch
 disp('The traverses will be moved to their zero-pitch positions.')
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(endHeaveMetersG,endHeaveMetersG); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(endPitchDegW,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
-[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,endHeaveMetersW); %#ok<ASGLU> 
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,MotorPositions.endHeaveMetersG); %#ok<ASGLU> 
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,MotorPositions.endHeaveMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters MotorPositions
 %% Redo the bias measurement at the new start positions
 disp(['Repeating UNLOADED BIAS. Turn FLUME OFF.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases MotorPositions
 
 %% Loaded bias measurement
 disp(['Finding LOADED BIAS. Turn FLUME ON.',newline,'Press any key to continue.'])
 pause()
 % Run find_bias_simulink.m script, then clear temporary variables from the workspace
 run('find_bias_simulink') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases MotorPositions
 
 %% Move motors to home position
 disp('The traverses will move to their home positions.')
 % Run the move to start positions
-[startPitchDegG, endPitchDegG] = deal(endPitchDegG,0); 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,0);
-[startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
-[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,0);
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,0); 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,0);
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,0); 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,0);
 run('move_to_position')
-clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases MotorPositions
 
 %% Ready
 disp('Done with experiment setup!')

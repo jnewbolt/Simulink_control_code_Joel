@@ -14,7 +14,7 @@ while repeatFindZeroPitchFlag == 1
         expandSearchFlag = expandSearchFlag + 1;
 
         [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = ...
-            trajectory_find_zero_pitch(Parameters, scanTime, pitchAmpDeg, traverse);
+            trajectory_find_zero_pitch(Parameters,MotorPositions, scanTime, pitchAmpDeg, traverse);
         % simulation time
         simTime = ceil(times(end))+2;
         disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
@@ -25,7 +25,6 @@ while repeatFindZeroPitchFlag == 1
         %% Run traverse
 
         % clear variables before next experiment
-%         clear raw_encoder_p1 raw_encoder_h1 raw_encoder_p2 raw_encoder_h2 raw_force_wallace raw_force_gromit ref_signal
         clear rawEncoderPitchCountsG rawEncoderHeaveCountsG rawEncoderPitchCountsW rawEncoderHeaveCountsW ...
             rawForceVoltsW rawForceVoltsG   rawVoltsVectrino rawVoltsAccelmeter refSig
 

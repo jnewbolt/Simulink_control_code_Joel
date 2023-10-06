@@ -1,4 +1,4 @@
-function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(P, scanTime, ...
+function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncSig] = trajectory_find_zero_pitch(P,MPs, scanTime, ...
     pitchAmpDeg, traverse)
         
     T = 1/P.sampleRate; % define timestep in seconds
@@ -25,20 +25,20 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     % concatenate ramps with commanded motion profiles
     switch traverse
         case 'Gromit'
-            profs(:,1) = pprof1+P.pitchOffsetDegG;
-            profs(:,2) = ones(size(pprof1))*P.heaveOffsetMetersG;
-            profs(:,3) = ones(size(pprof1))*P.pitchOffsetDegW;
-            profs(:,4) = ones(size(pprof1))*P.heaveOffsetMetersW;
+            profs(:,1) = pprof1+MPs.endPitchDegG; % Gromit pitch will move
+            profs(:,2) = ones(size(pprof1))*MPs.endHeaveMetersG;
+            profs(:,3) = ones(size(pprof1))*MPs.endPitchDegW;
+            profs(:,4) = ones(size(pprof1))*MPs.endHeaveMetersW;
             % Move Wallace out of the way to heave position -15 cm
             numPtsRamp = length(pprof1_a);
             offsetHeaveMetersZeroPitchW = -0.15;
-            rampHeaveMetersW = offsetHeaveMetersZeroPitchW*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))'+ones(numPtsRamp,1)*P.heaveOffsetMetersW;
-            profs(:,4) = [rampHeaveMetersW; (offsetHeaveMetersZeroPitchW+P.heaveOffsetMetersW)*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersW)];
+            rampHeaveMetersW = offsetHeaveMetersZeroPitchW*(0.5*(1-cos( pi*(0:numPtsRamp-1)/numPtsRamp)))'+ones(numPtsRamp,1)*MPs.endHeaveMetersW;
+            profs(:,4) = [rampHeaveMetersW; (offsetHeaveMetersZeroPitchW+MPs.endHeaveMetersW)*ones(length(pprof1)-2*length(pprof1_a),1); flip(rampHeaveMetersW)];
         case 'Wallace'
-            profs(:,1) = ones(size(pprof1))*P.pitchOffsetDegG;
-            profs(:,2) = ones(size(pprof1))*P.heaveOffsetMetersG;
-            profs(:,3) = pprof1+P.pitchOffsetDegW;
-            profs(:,4) = ones(size(pprof1))*P.heaveOffsetMetersW;
+            profs(:,1) = ones(size(pprof1))*MPs.endPitchDegG;
+            profs(:,2) = ones(size(pprof1))*MPs.endHeaveMetersG;
+            profs(:,3) = pprof1+MPs.endPitchDegW; % Wallace pitch will move
+            profs(:,4) = ones(size(pprof1))*MPs.endHeaveMetersW;
     end
 
     profs(:,5) = zeros(size(pprof1));
@@ -55,6 +55,6 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     syncSig = timeseries(profs(:,5),times);
 
     % plot trajectories
-    plot_profiles(pitchDegreesG,heaveMetersG,pitchDegreesW,heaveMetersW,syncSig);
+    plot_profiles(P,profs(:,3),profs(:,4),profs(:,1),profs(:,2),profs(:,5));
 
 end

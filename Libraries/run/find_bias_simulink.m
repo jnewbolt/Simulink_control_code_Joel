@@ -8,15 +8,15 @@ sampleTime = 1/Parameters.sampleRate;
 trajDuration = 20; % length of time of bias measurement in seconds
 trajStationary = zeros(trajDuration*Parameters.sampleRate,1);
 
-trajPitchDegreesG = trajStationary+endPitchDegG;
-trajHeaveMetersG = trajStationary+endHeaveMetersG;
-trajPitchDegreesW = trajStationary+endPitchDegW;
-trajHeaveMetersW = trajStationary+endHeaveMetersW;
+trajPitchDegreesG = trajStationary+MotorPositions.endPitchDegG;
+trajHeaveMetersG = trajStationary+MotorPositions.endHeaveMetersG;
+trajPitchDegreesW = trajStationary+MotorPositions.endPitchDegW;
+trajHeaveMetersW = trajStationary+MotorPositions.endHeaveMetersW;
 % reference signal - has 0 for ramps and delays and 1 for usable data
 trajRefSig = ones(size(trajStationary));
 
 % plot trajectories
-plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
+plot_profiles(Parameters,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
 
 % convert into time series to be output to simulink
 times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
