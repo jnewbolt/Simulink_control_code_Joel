@@ -3,20 +3,20 @@
 % flapping parameters
 tic % begin timing the experiment
 % check if necessary variables were setup
-if ~exist('Parameters','var') ||  ~exist('Biases','var')
-    error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters" and "Biases" must be established.')
+if ~exist('Parameters','var') ||  ~exist('Biases','var') ||  ~exist('MotorPositions','var')
+    error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters", "Biases", and "MotorPositions" must be established.')
 end
 %% Move motors to starting position
 disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure MOTORS have CLEARANCE and FLUME IS ON, then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, endPitchDegG] = deal(0,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
-[startPitchDegW, endPitchDegW] = deal(0,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
-[startHeaveMetersW, endHeaveMetersW] = deal(0,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
-clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
+clearvars -except Parameters Biases MotorPositions
 
 %% Sweep parameters
 % non-changing parameters
@@ -28,7 +28,7 @@ freqW = 0.89;
 freqGvec = freqW; 
 pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
 heaveAmpMetersGvec = 0;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
-pitchAmpDegWvec = (0:10:20);%10; %70; % 65,75
+pitchAmpDegWvec = 20;%10; %70; % 65,75
 heaveAmpMetersWvec = 0.03;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
@@ -48,7 +48,6 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         %% Take loaded bias measurement
         disp('Finding LOADED BIAS')
         run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the loaded bias
-%         clearvars -except Parameters Biases endPitchDegG endHeaveMetersG endPitchDegW endHeaveMetersW
         % for experiment: BiasesNoLoad = BiasesLoaded - BiasesLoaded0 + BiasesNoLoad0
         Biases.NoLoad = Biases.NoLoad0; % Passes accelerometer bias
         Biases.NoLoad.forceVoltsW = Biases.Loaded.forceVoltsW - Biases.Loaded0.forceVoltsW + Biases.NoLoad0.forceVoltsW;
@@ -77,16 +76,12 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
-        trajPitchDegreesG = endPitchDegG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof1];
-        trajHeaveMetersG = endHeaveMetersG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof2];
-        trajPitchDegreesW = endPitchDegW+[zeros(Parameters.heaveDelayW,1); pprof3; zeros(Parameters.pitchDelayW,1)];
-        trajHeaveMetersW = endHeaveMetersW+[pprof4; zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1)];
+        trajPitchDegreesG = MotorPositions.endPitchDegG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof1];
+        trajHeaveMetersG = MotorPositions.endHeaveMetersG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof2];
+        trajPitchDegreesW = MotorPositions.endPitchDegW+[zeros(Parameters.heaveDelayW,1); pprof3; zeros(Parameters.pitchDelayW,1)];
+        trajHeaveMetersW = MotorPositions.endHeaveMetersW+[pprof4; zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1)];
         trajRefSig = [zeros(Parameters.heaveDelayW,1); zeros(Parameters.pitchDelayW,1); rprof5]; % reference signal
-        
-        % plot trajectories
-        plot_profiles(trajPitchDegreesG,trajHeaveMetersG,trajPitchDegreesW,trajHeaveMetersW);
-        
-        % convert into time series to be output to simulink
+
         % convert into time series to be output to simulink
         times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
         pitchDegreesG = timeseries(trajPitchDegreesG,times);
@@ -94,6 +89,9 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         pitchDegreesW = timeseries(trajPitchDegreesW,times);
         heaveMetersW = timeseries(trajHeaveMetersW,times);
         syncSig = timeseries(trajRefSig,times);
+
+        % plot trajectories
+        plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
 
         % experiment simulation time
         simTime = ceil(times(end))+2;
@@ -171,12 +169,12 @@ end
 
 disp('The traverses will move to their home positions.')
 % Run the move to start positions
-[startPitchDegG, endPitchDegG] = deal(endPitchDegG,0); 
-[startHeaveMetersG, endHeaveMetersG] = deal(0,0);
-[startPitchDegW, endPitchDegW] = deal(endPitchDegW,0); 
-[startHeaveMetersW, endHeaveMetersW] = deal(endHeaveMetersW,0);
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,0); 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,0);
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,0); 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,0);
 run('move_to_position')
-clearvars -except Parameters Measurements Biases
+clearvars -except Parameters Measurements Biases MotorPositions
 
 %% Send email
 % send an email letting me know the experiment was completed
