@@ -55,6 +55,6 @@ function [times, pitchDegreesG, heaveMetersG, pitchDegreesW, heaveMetersW, syncS
     syncSig = timeseries(profs(:,5),times);
 
     % plot trajectories
-    plot_profiles(times,profs(:,3),profs(:,4),profs(:,1),profs(:,2),profs(:,5));
+    plot_profiles(times,profs(:,3),profs(:,4),profs(:,1),profs(:,2));
 
 end
