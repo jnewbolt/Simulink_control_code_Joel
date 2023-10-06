@@ -28,13 +28,12 @@ while repeatFindZeroPitchFlag == 1
         clear rawEncoderPitchCountsG rawEncoderHeaveCountsG rawEncoderPitchCountsW rawEncoderHeaveCountsW ...
             rawForceVoltsW rawForceVoltsG   rawVoltsVectrino rawVoltsAccelmeter refSig
 
-        disp(['Finding zero.  Traverse will now move to +/- ',num2str(pitchAmpDeg),' degrees']);
+        disp(['Finding zero pitch.  Traverse will now move to +/- ',num2str(pitchAmpDeg),' degrees']);
         set_param('simulink_traverse_control','SimulationCommand','start');
         
         disp('Running traverse...')
         % NOTE: this needs to account for the build time
-        pause(simTime);
-        disp('Acquiring data...')
+        pause(simTime+6);
         
         % check if data is
         while ~exist('refSig','var')
@@ -171,7 +170,3 @@ findZeroPitchFiles = dir([dataFolderName,'\FindZeroPitch*']);
 numFindZeroPitchFiles = numel(findZeroPitchFiles);
 filename = [dataFolderName,'\FindZeroPitch_',num2str(numFindZeroPitchFiles)];
 save(filename);
-
-disp([traverse, ' alignment done.']);
-
-% end

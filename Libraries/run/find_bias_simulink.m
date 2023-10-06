@@ -106,8 +106,7 @@ Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVo
 %% Raise warnings for potentially faulty measurements
 
 if Biases.accmeterVolts < 1.5 || Biases.accmeterVolts > 1.8
-    disp(['Accelerometer voltage is ', num2str(Biases.accmeterVolts,3), ' Volts'])
-    disp('Warning: Accelerometer voltage outside expected range. Try power cycling.')
+    disp(['Warning: Accelerometer voltage, ', num2str(Biases.accmeterVolts,2), ' Volts, is outside expected range. Try power cycling.'])
 end
 
 % Biases.forceVoltsRMSEW = sqrt(mean((rawForceVoltsW- repmat(Biases.forceVoltsW,numel(rawForceVoltsW(:,1)),1)).^2));
