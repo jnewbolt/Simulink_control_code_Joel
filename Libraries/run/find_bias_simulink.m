@@ -28,7 +28,7 @@ simTime = ceil(times(end))+2;
 disp(['Expected simulation time: ', num2str(simTime), ' seconds']);
 
 % plot trajectories
-plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
+% plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
 
 % pass parameters for gromit heave gain in simulation
 freqGain = 0; heaveGain = 0;

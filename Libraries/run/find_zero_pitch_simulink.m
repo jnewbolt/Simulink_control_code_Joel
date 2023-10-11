@@ -55,7 +55,7 @@ while repeatFindZeroPitchFlag == 1
         %% Convert data
         rangeTimes = 1:length(rawEncoderPitchCountsG);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, Parameters);
+        Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.Initial, rangeTimes, Parameters);
 
         %% Extract relevant forces for analysis
         k = find(refSig == 1); % inices of non-zero elements

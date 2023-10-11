@@ -6,36 +6,36 @@ tic % begin timing the experiment
 if ~exist('Parameters','var') ||  ~exist('Biases','var') ||  ~exist('MotorPositions','var')
     error('Run "setup_DAQ_simulink" to establish experimental setup. Structures "Parameters", "Biases", and "MotorPositions" must be established.')
 end
-P = Parameters;
+
 %% Move motors to starting position
 disp(['The traverses will be moved to their starting positions.',newline, ...
     'Make sure MOTORS have CLEARANCE and FLUME IS ON, then press any key to continue'])
 pause()
 % Run the move to center of the flume
-[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,P.pitchOffsetDegG); %#ok<ASGLU> 
-[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,P.heaveOffsetMetersG); %#ok<ASGLU> 
-[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,P.pitchOffsetDegW); %#ok<ASGLU> 
-[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,P.heaveOffsetMetersW); %#ok<ASGLU> 
+[startPitchDegG, MotorPositions.endPitchDegG] = deal(MotorPositions.endPitchDegG,Parameters.pitchOffsetDegG); %#ok<ASGLU> 
+[startHeaveMetersG, MotorPositions.endHeaveMetersG] = deal(MotorPositions.endHeaveMetersG,Parameters.heaveOffsetMetersG); %#ok<ASGLU> 
+[startPitchDegW, MotorPositions.endPitchDegW] = deal(MotorPositions.endPitchDegW,Parameters.pitchOffsetDegW); %#ok<ASGLU> 
+[startHeaveMetersW, MotorPositions.endHeaveMetersW] = deal(MotorPositions.endHeaveMetersW,Parameters.heaveOffsetMetersW); %#ok<ASGLU> 
 run('move_to_position') % This is not done with a function call so that the Simulink model can access workspace variables
 clearvars -except Parameters Biases MotorPositions
 
 %% Sweep parameters
 % non-changing parameters
-P.phaseLagPitchDeg = 90;
-P.nCyclesG = 30;
-P.nTransientCycsG = 2;
+phaseLagPitchDeg = 90;
+nCyclesG = 30;
+nTransientCycsG = 2;
 % variable parameters
-P.freqW = 0.89;
-P.freqGvec = freqW; 
-P.pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
-P.heaveAmpMetersGvec = 0;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
-P.pitchAmpDegWvec = 20;%10; %70; % 65,75
-P.heaveAmpMetersWvec = 0.03;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
+freqW = 0.89;
+freqGvec = freqW; 
+pitchAmpDegGvec = 0;%10; %(0:10:30); %,60,80]; % pitch amplitude in degrees
+heaveAmpMetersGvec = 0;%0.05; %(0:0.2:0.6); % heave amplitude in chord lengths
+pitchAmpDegWvec = 20;%10; %70; % 65,75
+heaveAmpMetersWvec = 0.03;%0.05;%(0:0.05:1.1); %[0.6,0.8,1.0,1.2,1.4,1.6];
 initialPhaseLagWbehindG = 0; 
 phaseLagStep = 20; % phase change between trials
-P.phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
+phaseLagWbehindGvec = 0;%(initialPhaseLagWbehindG:phaseLagStep:180);
 
-P.nTrials = length(freqGvec)*length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
+nTrials = length(freqGvec)*length(pitchAmpDegGvec)*length(heaveAmpMetersGvec)*length(pitchAmpDegWvec)*length(heaveAmpMetersWvec)*length(phaseLagWbehindGvec);
 iTrial = 1;
 
 %% Experimental loop
@@ -46,6 +46,7 @@ for pitchAmpDegW = pitchAmpDegWvec
 for heaveAmpMetersW = heaveAmpMetersWvec
     phaseLagWbehindG = initialPhaseLagWbehindG; % initial value of phase difference in degrees
     while phaseLagWbehindG <= max(phaseLagWbehindGvec) % while loop to change the phase so trial can be repeated if the simulink model fails to run
+
         %% Take loaded bias measurement
         disp('Finding LOADED BIAS')
         run("find_bias_simulink.m"); % find another loaded bias that contains the drifting and the loaded bias
@@ -54,47 +55,37 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         Biases.NoLoad.forceVoltsW = Biases.Loaded.forceVoltsW - Biases.Loaded0.forceVoltsW + Biases.NoLoad0.forceVoltsW;
         Biases.NoLoad.forceVoltsG = Biases.Loaded.forceVoltsG - Biases.Loaded0.forceVoltsG + Biases.NoLoad0.forceVoltsG;    
         %% Check velocity and acceleration limits
-        P.heaveVelocityMetersPerSecLimit = 0.5; % Heave velocity limit in m/s
-        P.heaveAccelMetersPerSecSqLimit = 4.5; % Heave acceleration limit in m/s/s
+        heaveVelocityMetersPerSecLimit = 0.5; % Heave velocity limit in m/s
+        heaveAccelMetersPerSecSqLimit = 4.5; % Heave acceleration limit in m/s/s
         heaveVelocityMaxG = heaveAmpMetersG*2*pi*freqG;
         heaveVelocityMaxW = heaveAmpMetersW*2*pi*freqW;
         heaveAccelerationMaxG = heaveAmpMetersG*(2*pi*freqG)^2;
         heaveAccelerationMaxW = heaveAmpMetersW*(2*pi*freqW)^2;
-        if heaveVelocityMaxG > P.heaveVelocityMetersPerSecLimit || heaveVelocityMaxW > P.heaveVelocityMetersPerSecLimit || heaveAccelerationMaxG > P.heaveAccelMetersPerSecSqLimit || heaveAccelerationMaxW > P.heaveAccelMetersPerSecSqLimit
+        if heaveVelocityMaxG > heaveVelocityMetersPerSecLimit || heaveVelocityMaxW > heaveVelocityMetersPerSecLimit || heaveAccelerationMaxG > heaveAccelMetersPerSecSqLimit || heaveAccelerationMaxW > heaveAccelMetersPerSecSqLimit
             break % Jump to next trial if command limits are exceeded
         end
-
-        %% Save trial parameters to Parameters structure
-        P.iTrial = iTrial;
-        P.freqW = freqW;
-        P.freqG = freqG;
-        P.pitchAmpDegG = pitchAmpDegG;
-        P.heaveAmpMetersG = heaveAmpMetersG;
-        P.pitchAmpDegW = pitchAmpDegW;
-        P.heaveAmpMetersW = heaveAmpMetersW;
-        P.phaseLagWbehindG = phaseLagWbehindG; 
         
         %% Profile generation
         % Dependent parameters
         nCyclesW = (freqW/freqG)*nCyclesG;
         nTransientCycsW = (freqW/freqG)*nTransientCycsG;
         % Generate experiment profiles
-        [~, pprof1] = trajectory_experiment(nCyclesG, freqG, P.sampleRate, nTransientCycsG, nTransientCycsG, pitchAmpDegG, phaseLagPitchDeg, 0);
-        [~, pprof2] = trajectory_experiment(nCyclesG, freqG, P.sampleRate, nTransientCycsG, nTransientCycsG, heaveAmpMetersG, 0, 0);
-        [~, pprof3] = trajectory_experiment(nCyclesW, freqW, P.sampleRate, nTransientCycsW, nTransientCycsW, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
-        [~, pprof4] = trajectory_experiment(nCyclesW, freqW, P.sampleRate, nTransientCycsW, nTransientCycsW, heaveAmpMetersW , phaseLagWbehindG, 0);
-        [~, rprof5] = trajectory_experiment(nCyclesG, freqG, P.sampleRate, nTransientCycsG, nTransientCycsG, 1, 0, 1); % reference signal
+        [~, pprof1] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, pitchAmpDegG, phaseLagPitchDeg, 0);
+        [~, pprof2] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, heaveAmpMetersG, 0, 0);
+        [~, pprof3] = trajectory_experiment(nCyclesW, freqW, Parameters.sampleRate, nTransientCycsW, nTransientCycsW, pitchAmpDegW, phaseLagWbehindG+phaseLagPitchDeg, 0);
+        [~, pprof4] = trajectory_experiment(nCyclesW, freqW, Parameters.sampleRate, nTransientCycsW, nTransientCycsW, heaveAmpMetersW , phaseLagWbehindG, 0);
+        [~, rprof5] = trajectory_experiment(nCyclesG, freqG, Parameters.sampleRate, nTransientCycsG, nTransientCycsG, 1, 0, 1); % reference signal
         
         clear trajPitchDegreesG trajHeaveMetersG trajPitchDegreesW trajHeaveMetersW trajRefSig
         % Assemble output profiles
-        trajPitchDegreesG = MotorPositions.endPitchDegG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof1];
-        trajHeaveMetersG = MotorPositions.endHeaveMetersG+[zeros(P.heaveDelayW+P.pitchDelayW,1); pprof2];
-        trajPitchDegreesW = MotorPositions.endPitchDegW+[zeros(P.heaveDelayW,1); pprof3; zeros(P.pitchDelayW,1)];
-        trajHeaveMetersW = MotorPositions.endHeaveMetersW+[pprof4; zeros(P.heaveDelayW+P.pitchDelayW,1)];
-        trajRefSig = [zeros(P.heaveDelayW,1); zeros(P.pitchDelayW,1); rprof5]; % reference signal
+        trajPitchDegreesG = MotorPositions.endPitchDegG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof1];
+        trajHeaveMetersG = MotorPositions.endHeaveMetersG+[zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1); pprof2];
+        trajPitchDegreesW = MotorPositions.endPitchDegW+[zeros(Parameters.heaveDelayW,1); pprof3; zeros(Parameters.pitchDelayW,1)];
+        trajHeaveMetersW = MotorPositions.endHeaveMetersW+[pprof4; zeros(Parameters.heaveDelayW+Parameters.pitchDelayW,1)];
+        trajRefSig = [zeros(Parameters.heaveDelayW,1); zeros(Parameters.pitchDelayW,1); rprof5]; % reference signal
 
         % convert into time series to be output to simulink
-        times = (0:length(trajPitchDegreesG)-1)'/P.sampleRate; % time vector to create time series objects
+        times = (0:length(trajPitchDegreesG)-1)'/Parameters.sampleRate; % time vector to create time series objects
         pitchDegreesG = timeseries(trajPitchDegreesG,times);
         heaveMetersG = timeseries(trajHeaveMetersG,times);
         pitchDegreesW = timeseries(trajPitchDegreesW,times);
@@ -102,7 +93,7 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         syncSig = timeseries(trajRefSig,times);
 
         % plot trajectories
-        plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
+%         plot_profiles(times,trajPitchDegreesW,trajHeaveMetersW,trajPitchDegreesG,trajHeaveMetersG);
 
         % experiment simulation time
         simTime = ceil(times(end))+2;
@@ -148,13 +139,34 @@ for heaveAmpMetersW = heaveAmpMetersWvec
         %% Data conversion
         rangeTimes = find(refSig);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, P);
+        Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases.NoLoad, rangeTimes, Parameters);
 
+        %% Save trial parameters to Parameters structure
+        Parameters.iTrial = iTrial;
+        Parameters.freqG = freqG;
+        Parameters.pitchAmpDegG = pitchAmpDegG;
+        Parameters.heaveAmpMetersG = heaveAmpMetersG;
+        Parameters.pitchAmpDegW = pitchAmpDegW;
+        Parameters.heaveAmpMetersW = heaveAmpMetersW;
+        Parameters.phaseLagWbehindG = phaseLagWbehindG; 
+        Parameters.phaseLagPitchDeg = 90;
+        Parameters.nCyclesG = nCyclesG;
+        Parameters.nTransientCycsG = nTransientCycsG;
+        Parameters.freqW = freqW;
+        Parameters.freqGvec = freqGvec; 
+        Parameters.pitchAmpDegGvec = pitchAmpDegGvec;
+        Parameters.heaveAmpMetersGvec = heaveAmpMetersGvec;
+        Parameters.pitchAmpDegWvec = pitchAmpDegWvec;
+        Parameters.heaveAmpMetersWvec = heaveAmpMetersWvec;
+        Parameters.phaseLagWbehindGvec = phaseLagWbehindGvec;
+        Parameters.heaveVelocityMetersPerSecLimit = heaveVelocityMetersPerSecLimit; % Heave velocity limit in m/s
+        Parameters.heaveAccelMetersPerSecSqLimit = heaveAccelMetersPerSecSqLimit; % Heave acceleration limit in m/s/s
+        Parameters.nCyclesW = nCyclesW;
+        Parameters.nTransientCycsW = nTransientCycsW;
         %% Save data
         dateAndTime = clock;
         trialfilename = ['trial_',num2str(iTrial)];
-        dataFolderName = [P.dataFolderName,'\data'];
-        Parameters = P;
+        dataFolderName = [Parameters.dataFolderName,'\data'];
         save([dataFolderName,'\',trialfilename],"Biases","Measurements","Parameters","Data","dateAndTime");
 
         %% Check for misalignment
