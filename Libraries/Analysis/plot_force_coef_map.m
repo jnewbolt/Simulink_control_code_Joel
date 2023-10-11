@@ -9,7 +9,7 @@ clim([-0 3])
 colormap(bluewhitered)
 
 contour(pitchAmpDegVec,heaveAmpMetersVec,forceCoefMeans,[-1e-6 -1e-6],'LineWidth',4,'LineColor','k','LineStyle','--')
-% [C,h] = contour(pitchAmpDegVec,heaveAmpMetersVec,angleOfAttackMaxDegMatrix,[-20 -10 0 10 20],'LineWidth',3,'LineColor','k','ShowText','on');
+[C,h] = contour(pitchAmpDegVec,heaveAmpMetersVec,angleOfAttackMaxDegMatrix,[-20 -10 0 10 20],'LineWidth',3,'LineColor','k','ShowText','on');
 % clabel(C,h,'FontSize',20)
 % scatter(phase_vec,H2star_vec,60,'.','k')
 grid on

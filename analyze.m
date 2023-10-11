@@ -123,9 +123,9 @@ for iTrial = firstTrial:nTrials
     end
 
 %% Extract measured quantities
-    P = Parameters; M = Measurements;
+    P = Parameters; D = Data;
     % Define timesteps for each subtrial, excluding ramp up/down
-    nTimesteps = length(Measurements.pitchDegreesG);
+    nTimesteps = length(Data.pitchDegreesG);
     timestepFirst = round(nTransientCycsG*P.sampleRate/freqG)+1;
     timestepLast = round(nTimesteps-nTransientCycsG*P.sampleRate/freqG);
     times = (1:timestepLast-timestepFirst+1)/P.sampleRate;
@@ -133,35 +133,33 @@ for iTrial = firstTrial:nTrials
     timeStarW = times*freqW;
     phase12(iTrial) = phaseLagWbehindG;
 
-
     pitchTrialsW = length(pitchAmpDegWvec);
     heaveTrialsW = length(heaveAmpMetersWvec);
-
 
     chordMetersG = Parameters.Foils.foilG.chord;
     chordMetersW = Parameters.Foils.foilW.chord;
     spanMetersG = Parameters.Foils.foilG.span;
     spanMetersW = Parameters.Foils.foilW.span;
-    heaveMetersCropG = M.heaveMetersG(timestepFirst:timestepLast); 
-    heaveMetersCropW = M.heaveMetersW(timestepFirst:timestepLast); 
+    heaveMetersCropG = D.heaveMetersG(timestepFirst:timestepLast); 
+    heaveMetersCropW = D.heaveMetersW(timestepFirst:timestepLast); 
     heaveStarG = heaveMetersCropG/chordMetersG;
     heaveStarW = heaveMetersCropW/chordMetersW;
-    pitchRadsCropG = (pi/180)*M.pitchDegreesG(timestepFirst:timestepLast); 
-    pitchRadsCropW = (pi/180)*M.pitchDegreesW(timestepFirst:timestepLast); 
-    forcexW = M.forcesNewtonsW(timestepFirst:timestepLast,1);
-    forceyW = M.forcesNewtonsW(timestepFirst:timestepLast,2);
-    forcezW = M.forcesNewtonsW(timestepFirst:timestepLast,3);
-    torquexW = M.forcesNewtonsW(timestepFirst:timestepLast,4);
-    torqueyW = M.forcesNewtonsW(timestepFirst:timestepLast,5);
-    torquezW = M.forcesNewtonsW(timestepFirst:timestepLast,6);
-    forcexG = M.forcesNewtonsG(timestepFirst:timestepLast,1);
-    forceyG = M.forcesNewtonsG(timestepFirst:timestepLast,2);
-    forcezG = M.forcesNewtonsG(timestepFirst:timestepLast,3);
-    torquexG = M.forcesNewtonsG(timestepFirst:timestepLast,4);
-    torqueyG = M.forcesNewtonsG(timestepFirst:timestepLast,5);
-    torquezG = M.forcesNewtonsG(timestepFirst:timestepLast,6);
-    inertiaLoadyFiltG = M.forceInertialLoadG(timestepFirst:timestepLast,1);
-    flowSpeedMetersPerSec = M.flowMetersPerSecondVectrino(timestepFirst:timestepLast,1);
+    pitchRadsCropG = (pi/180)*D.pitchDegreesG(timestepFirst:timestepLast); 
+    pitchRadsCropW = (pi/180)*D.pitchDegreesW(timestepFirst:timestepLast); 
+    forcexW = D.forcesNewtonsW(timestepFirst:timestepLast,1);
+    forceyW = D.forcesNewtonsW(timestepFirst:timestepLast,2);
+    forcezW = D.forcesNewtonsW(timestepFirst:timestepLast,3);
+    torquexW = D.forcesNewtonsW(timestepFirst:timestepLast,4);
+    torqueyW = D.forcesNewtonsW(timestepFirst:timestepLast,5);
+    torquezW = D.forcesNewtonsW(timestepFirst:timestepLast,6);
+    forcexG = D.forcesNewtonsG(timestepFirst:timestepLast,1);
+    forceyG = D.forcesNewtonsG(timestepFirst:timestepLast,2);
+    forcezG = D.forcesNewtonsG(timestepFirst:timestepLast,3);
+    torquexG = D.forcesNewtonsG(timestepFirst:timestepLast,4);
+    torqueyG = D.forcesNewtonsG(timestepFirst:timestepLast,5);
+    torquezG = D.forcesNewtonsG(timestepFirst:timestepLast,6);
+    inertiaLoadyFiltG = D.forceInertialLoadG(timestepFirst:timestepLast,1);
+    flowSpeedMetersPerSec = D.flowMetersPerSecondVectrino(timestepFirst:timestepLast,1);
 
     % Flow speed statistical quantities
     flowspeedMetersPerSecMean(iTrial) = abs(mean(flowSpeedMetersPerSec));
@@ -191,7 +189,7 @@ for iTrial = firstTrial:nTrials
     freqStarCmdW(iTrial) = chordMetersW*freqG/flowspeedMetersPerSecMean(iTrial);
     heaveAmpStarCmdW(iTrial) = (max(trajHeaveMetersW)-min(trajHeaveMetersW))/(2*chordMetersW);
     heaveAmpStarMeasuredW(iTrial) = (max(heaveMetersCropW)-min(heaveMetersCropW))/(2*chordMetersW);
-    angleOfAttackMaxDegW(iTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
+    angleOfAttackMaxDegW(iTrial) = (-180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) + pitchAmpDegW;
 %% Filter force data
     forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
     freqCutoff = 10*freqG; % Filter cutoff frequency
@@ -230,7 +228,7 @@ for iTrial = firstTrial:nTrials
     pitchAmpTrial = floor((iTrial-1)/heaveTrialsW)+1;
     dragCoefMeansW(heaveAmpTrial,pitchAmpTrial) = mean(dragCoefW);
     liftCoefMaxW(heaveAmpTrial,pitchAmpTrial) = max(liftCoefW);
-    angleOfAttackMaxDegMatrixW(heaveAmpTrial,pitchAmpTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
+    angleOfAttackMaxDegMatrixW(heaveAmpTrial,pitchAmpTrial) = angleOfAttackMaxDegW(iTrial);
 %% Calculate power
     powerScale(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^3;
     powerFluid = forceLiftFiltG .*heaveVelocityMetersPerSecG;

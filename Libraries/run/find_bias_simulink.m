@@ -59,6 +59,16 @@ while strcmp(simStatus,'stopped')
     end
 end
 
+% Put raw measurements into a single structure
+Measurements.rawEncoderHeaveCountsG = rawEncoderHeaveCountsG;
+Measurements.rawEncoderHeaveCountsW = rawEncoderHeaveCountsW;
+Measurements.rawEncoderPitchCountsG = rawEncoderPitchCountsG;
+Measurements.rawEncoderPitchCountsW = rawEncoderPitchCountsW;
+Measurements.rawForceVoltsW = rawForceVoltsW;
+Measurements.rawForceVoltsG = rawForceVoltsG;
+Measurements.rawVoltsVectrino = rawVoltsVectrino;
+Measurements.rawVoltsAccelmeter = rawVoltsAccelmeter;
+Measurements.refSig = refSig;
 disp('Done')
 
 %% Calculate force biases
@@ -77,7 +87,7 @@ BiasesNow.accmeterVoltsStdev = std(rawVoltsAccelmeter(rangeTimes,:),1);
     %% Convert output
 
 rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, BiasesNow, rangeTimes, Parameters);
+Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, BiasesNow, rangeTimes, Parameters);
 
 %     %% Plot results
 % 
@@ -125,7 +135,7 @@ end
 
 %% Save bias into a subfolder within the active saving folder
 
-time = clock;
+dateAndTime = clock;
 dataFolderName = [Parameters.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
@@ -133,6 +143,7 @@ biasFiles = dir([dataFolderName,'\Biases*']);
 numBiasFiles = numel(biasFiles);
 if numBiasFiles == 0 
     filename = [dataFolderName,'\BiasesNoLoad_BeforeFindZeroPitch'];
+    Biases.Initial = BiasesNow;
 elseif numBiasFiles == 1
     filename = [dataFolderName,'\BiasesNoLoad_0'];
     Biases.NoLoad0 = BiasesNow;
@@ -143,6 +154,6 @@ else
     filename = [dataFolderName,'\BiasesLoaded_',num2str(numBiasFiles-2)];
     Biases.Loaded = BiasesNow;
 end
-save(filename);
+save(filename,"Biases","Measurements","Parameters","Data","dateAndTime");
 
 % end

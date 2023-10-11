@@ -40,13 +40,22 @@ while repeatFindZeroPitchFlag == 1
             pause(5)
             disp('Loading...')
         end
-
+        % Put raw measurements into a single structure
+        Measurements.rawEncoderHeaveCountsG = rawEncoderHeaveCountsG;
+        Measurements.rawEncoderHeaveCountsW = rawEncoderHeaveCountsW;
+        Measurements.rawEncoderPitchCountsG = rawEncoderPitchCountsG;
+        Measurements.rawEncoderPitchCountsW = rawEncoderPitchCountsW;
+        Measurements.rawForceVoltsW = rawForceVoltsW;
+        Measurements.rawForceVoltsG = rawForceVoltsG;
+        Measurements.rawVoltsVectrino = rawVoltsVectrino;
+        Measurements.rawVoltsAccelmeter = rawVoltsAccelmeter;
+        Measurements.refSig = refSig;
         disp('Done')
     
         %% Convert data
         rangeTimes = 1:length(rawEncoderPitchCountsG);
         rawEncoders = [rawEncoderPitchCountsG, rawEncoderHeaveCountsG, rawEncoderPitchCountsW, rawEncoderHeaveCountsW];
-        Measurements = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, Parameters);
+        Data = convert_output(rawEncoders, rawForceVoltsW, rawForceVoltsG, rawVoltsVectrino, rawVoltsAccelmeter, refSig, Biases, rangeTimes, Parameters);
 
         %% Extract relevant forces for analysis
         k = find(refSig == 1); % inices of non-zero elements
@@ -56,15 +65,15 @@ while repeatFindZeroPitchFlag == 1
     
         switch traverse
             case 'Gromit'
-                Fy_pos = Measurements.forcesNewtonsG(rangePosSweep,2);
-                pitch_pos = Measurements.pitchDegreesG(rangePosSweep);
-                Fy_neg = Measurements.forcesNewtonsG(rangeNegSweep,2);
-                pitch_neg = Measurements.pitchDegreesG(rangeNegSweep);
+                Fy_pos = Data.forcesNewtonsG(rangePosSweep,2);
+                pitch_pos = Data.pitchDegreesG(rangePosSweep);
+                Fy_neg = Data.forcesNewtonsG(rangeNegSweep,2);
+                pitch_neg = Data.pitchDegreesG(rangeNegSweep);
             case 'Wallace'
-                Fy_pos = Measurements.forcesNewtonsW(rangePosSweep,2);
-                pitch_pos = Measurements.pitchDegreesW(rangePosSweep);
-                Fy_neg = Measurements.forcesNewtonsW(rangeNegSweep,2);
-                pitch_neg = Measurements.pitchDegreesW(rangeNegSweep);
+                Fy_pos = Data.forcesNewtonsW(rangePosSweep,2);
+                pitch_pos = Data.pitchDegreesW(rangePosSweep);
+                Fy_neg = Data.forcesNewtonsW(rangeNegSweep,2);
+                pitch_neg = Data.pitchDegreesW(rangeNegSweep);
         end
     
         startPitchDegPosSweep = pitch_pos(1);
@@ -144,7 +153,7 @@ end % repeat alignment search
 % %% Plot force direction
 % figure;
 % pitch = out(rangePosSweep,prof_index);
-% forceTorqueGromit = Measurements.forcesNewtonsG(rangePosSweep,2); %out(rangePosSweep,fy_index-1:fy_index+4);
+% forceTorqueGromit = Data.forcesNewtonsG(rangePosSweep,2); %out(rangePosSweep,fy_index-1:fy_index+4);
 % zerosVector = zeros(length(pitch),1);
 % raw_force_gromit_labFrame_x = sum([cos(pitch) -sin(pitch)].*forceTorqueGromit(:,1:2),2);
 % raw_force_gromit_labFrame_y = sum([sin(pitch) cos(pitch)].*forceTorqueGromit(:,1:2),2);
@@ -162,11 +171,11 @@ end % repeat alignment search
 
 %% Save bias into a subfolder within the active saving folder
 
-time = clock;
+dateAndTime = clock;
 dataFolderName = [Parameters.dataFolderName,'\data'];
 
 % Check how many bias files have been created in order to name the current one being generated
 findZeroPitchFiles = dir([dataFolderName,'\FindZeroPitch*']);
 numFindZeroPitchFiles = numel(findZeroPitchFiles);
 filename = [dataFolderName,'\FindZeroPitch_',num2str(numFindZeroPitchFiles)];
-save(filename);
+save(filename,"Biases","Measurements","Parameters","Data","dateAndTime");
