@@ -1,18 +1,21 @@
-function [] = plot_power_spectrum(flowspeedMetersPerSecMean,chordMeters,freq,freqSpec,powerSpec,plotTitle)
+function [] = plot_power_spectrum(flowspeedMetersPerSecMean,chordMeters,freq,freqSpec,powerSpec,freqCutoff,plotTitle)
 
    figure('Position', [100 80 1600 900])
     hold on; grid on;
 
-%     plot([flume_hertz/freq,flume_hertz/freq],[-60,60],'color','cyan','LineStyle','--','LineWidth',4)
-    plot(freqSpec/freq,10*log10(powerSpec),'Color','black','LineWidth',4,'DisplayName','PSD'); % plot force spectrum
-%     scatter(forcespec_peaklocs,forcespec_peakpowers,'Marker','o');
+
 
     % Plot heave spectrum
 
 %     plot([f_heave_dom f_heave_dom],[-60 30],'Color','red','DisplayName','Frequency dominant');
 %     plot(f_heave,10*log10(heave_powerspec));
 %     plot([f_force_dom f_force_dom],[-60 30],'Color','red','LineWidth',4);
-    plot([1 1],[-60 60],'Color','red','LineStyle','--','LineWidth',4,'DisplayName','Flapping frequency');
+    plot([1 1],[-60 60],'Color','red','LineWidth',4,'DisplayName','Flapping frequency');
+    plot([freqCutoff/freq freqCutoff/freq],[-60 60],'Color','blue','LineWidth',4,'DisplayName','Filter cutoff');
+
+%     plot([flume_hertz/freq,flume_hertz/freq],[-60,60],'color','cyan','LineStyle','--','LineWidth',4)
+    plot(freqSpec/freq,10*log10(powerSpec),'Color','black','LineWidth',4,'DisplayName','PSD'); % plot force spectrum
+%     scatter(forcespec_peaklocs,forcespec_peakpowers,'Marker','o');
 
     % Freq. of predicted vortex shedding
 %     St=0.2;

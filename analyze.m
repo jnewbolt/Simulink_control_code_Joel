@@ -1,7 +1,7 @@
 % This script will run analysis on the data that is the folder/ specified by the variable "filename"
 
 %% Load data, see Libraries/Analysis/dataLocations.m for more data storage location strings
-datadir = 'D:\Experiments\Data\FoilAndVib4';%
+datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FoilAndVib_D=75cm';%
 %% Some alternate important data locations:
 % datadir = 'C:\Users\Joel\Documents\Globus-BreuerLab@Home\FoilAndVib_D=75cm';
 % datadir = 'R:\ENG_Breuer_Shared\group\JoelNewbolt\ExperimentalData\FlexFoilAndCyl_25-Sep-2023_16-47-28';
@@ -22,23 +22,25 @@ datadir = 'D:\Experiments\Data\FoilAndVib4';%
 % trialdir = 'FoilAndVib_close\data\'; namepart1 = '20230427_PrescribedMotion_p2=0deg_h2='; namepart2 = 'c_ph='; namepart3 = 'deg';
 %%
 %% Type of analysis requested 
-singleTrialAnalysis = 1;
-manyTrialAnalysis = 0;
+singleTrialAnalysis = 0;
+manyTrialAnalysis = 1;
 varyphase = 0;
 varypitch1 = 0;
 
 createplotForcesVsTimeG = 0;
-createplotForcesVsTimeW = 1;
+createplotForcesVsTimeW = 0;
 createplotForcesVsDisplacementsG = 0;
 createplotForcesVsDisplacementsW = 0;
 createplotForceSpectrumG = 0;
-createplotForceSpectrumW = 1;
-createplotEnergyMap = 0;
-createGIF = 0;
+createplotForceSpectrumW = 0;
+createplotEnergyMapG = 0;
+createplotDragCoefMapW = 0;
+createplotLiftCoefMapW = 1;
 createVideo = 0;
+% createGIF = 0;
 
 if manyTrialAnalysis == 0
-    firstTrial = 1;
+    firstTrial = 4; % Plot a single trial of your choice
     nTrials = firstTrial;
 end
 
@@ -105,6 +107,7 @@ torquezScaleG = nan(nTrials,1);
 torqueLDscaleW = nan(nTrials,1);
 torquezScaleW = nan(nTrials,1);
 angleOfAttackMaxDegW = nan(nTrials,1);
+% dragCoefMeansW = nan(pitchTrialsW,heaveTrialsW);
 videoIndex = 1;
 %% Loop through trials
 
@@ -129,6 +132,11 @@ for iTrial = firstTrial:nTrials
     timeStarG = times*freqG;
     timeStarW = times*freqW;
     phase12(iTrial) = phaseLagWbehindG;
+
+
+    pitchTrialsW = length(pitchAmpDegWvec);
+    heaveTrialsW = length(heaveAmpMetersWvec);
+
 
     chordMetersG = Parameters.Foils.foilG.chord;
     chordMetersW = Parameters.Foils.foilW.chord;
@@ -186,7 +194,7 @@ for iTrial = firstTrial:nTrials
     angleOfAttackMaxDegW(iTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
 %% Filter force data
     forceLiftGcorrected = forceLiftG;%+inertialload_y_G;
-    freqCutoff = 10*freqG;
+    freqCutoff = 10*freqG; % Filter cutoff frequency
     [b,a] = butter(6,freqCutoff*2/P.sampleRate,'low'); % butterworth filter 6th order with cut-off frequency at 10*freq
     forceLiftFiltG = filtfilt(b,a,squeeze(forceLiftGcorrected));
     forceLiftFiltW = filtfilt(b,a,squeeze(forceLiftW)); 
@@ -217,6 +225,12 @@ for iTrial = firstTrial:nTrials
     torqueDragCoefW = torqueDragFiltW/torqueLDscaleW(iTrial);
     torquezCoefW = torquezFiltW/torquezScaleW(iTrial);
 
+    %% Average values for each trial
+    heaveAmpTrial = mod(iTrial-1,pitchTrialsW)+1;
+    pitchAmpTrial = floor((iTrial-1)/heaveTrialsW)+1;
+    dragCoefMeansW(heaveAmpTrial,pitchAmpTrial) = mean(dragCoefW);
+    liftCoefMaxW(heaveAmpTrial,pitchAmpTrial) = max(liftCoefW);
+    angleOfAttackMaxDegMatrixW(heaveAmpTrial,pitchAmpTrial) = (180/pi)*atan2(2*pi*freqW*heaveAmpMetersW,flowspeedMetersPerSecMean(iTrial)) - pitchAmpDegW;
 %% Calculate power
     powerScale(iTrial) = 0.5*1000*chordMetersG*spanMetersG*flowspeedMetersPerSecMean(iTrial)^3;
     powerFluid = forceLiftFiltG .*heaveVelocityMetersPerSecG;
@@ -356,13 +370,13 @@ for iTrial = firstTrial:nTrials
 if createplotForceSpectrumG == 1
     plotTitle = ['Object behind foil phase diff ',num2str(phaseLagWbehindG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'chord'];
     % plot_PrescribedMotionPowerSpectrum_MATLABin
-    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersG,freqG,freqForceSpecG,forcePowerSpecG,plotTitle)
+    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersG,freqG,freqForceSpecG,forcePowerSpecG,freqCutoff,plotTitle)
 end
 if createplotForceSpectrumW == 1
     plotTitle = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}',newline,...
         'and pitch amplitude ',num2str(pitchAmpDegW,2),'deg',newline,...
         'AoA max = ',num2str(angleOfAttackMaxDegW(iTrial),2),' deg'];% plot_PrescribedMotionPowerSpectrum_MATLABin
-    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersW,freqW,freqForceSpecW,forcePowerSpecW,plotTitle)
+    plot_power_spectrum(flowspeedMetersPerSecMean(iTrial),chordMetersW,freqW,freqForceSpecW,forcePowerSpecW,freqCutoff,plotTitle)
 end
 %% Plot force and motion
 % if (mod(iTrial,1)==0 && iTrial>6*length(phaseLagWbehindGvec)+1 && ...
@@ -395,12 +409,14 @@ end
     end
 % Plot lift and drag coefficients vs heave and angular position for Gromit
     if createplotForcesVsDisplacementsG==1
-        titlePlots = ['Object behind foil +/-',num2str(pitchAmpDegG,2),'deg and +/-',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c}'];
+        titlePlots = ['Object downstream',newline,'w/ heave amplitude ',num2str(heaveAmpMetersG/chordMetersG,2),'{\it c} and phase diff ',num2str(phaseLagWbehindG,2),'deg'];
         plotForceTorqueVsDisplacement(timeStarG,P.sampleRate,freqG,pitchRadsCropG,heaveStarG,liftCoefG,...
             torquezCoefG,titlePlots)
     end
     if createplotForcesVsDisplacementsW==1
-        titlePlots = ['Foil ahead of object +/-',num2str(pitchAmpDegW,2),'deg and +/-',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}'];
+            titlePlots = ['Foil w/ heave amplitude ',num2str(heaveAmpMetersW/chordMetersW,2),'{\it c}',newline,...
+        'and pitch amplitude ',num2str(pitchAmpDegW,2),'deg',newline,...
+        'AoA max = ',num2str(angleOfAttackMaxDegW(iTrial),2),' deg'];
         plotForceTorqueVsDisplacement(timeStarG,P.sampleRate,freqG,pitchRadsCropW,heaveStarW,liftCoefW,...
             torquezCoefW,titlePlots)
     end
@@ -435,6 +451,7 @@ if createVideo == 1
             end
     end
     close(v);
+    close all
 end
 %% Plot Power coefficient contour
 % plot_PowerCoefContour_vsphasediffandampl
@@ -448,8 +465,16 @@ end
 % A_star_sorted = [A_star_measured;A_star_measured(1,:)];
 % powercoef_mean_sorted = [powercoef_mean;powercoef_mean(1,:)];
 
+if createplotDragCoefMapW == 1
+    plotTitle = 'Foil drag coefficient mean' ;
+    plot_force_coef_map(pitchAmpDegWvec,heaveAmpMetersWvec/chordMetersW,dragCoefMeansW,angleOfAttackMaxDegMatrixW,plotTitle,'{\it C}_D mean')
+end
+if createplotLiftCoefMapW == 1
+    plotTitle = 'Foil lift coefficient max' ;
+    plot_force_coef_map(pitchAmpDegWvec,heaveAmpMetersWvec/chordMetersW,liftCoefMaxW,angleOfAttackMaxDegMatrixW,plotTitle,'{\it C}_L max')
+end
 
-if createplotEnergyMap ==1
+if createplotEnergyMapG ==1
 % Plot acceleration limit
 acc_limit = 4.9; % Acceleration limit in m/s^2
 v_limit = 0.5;
