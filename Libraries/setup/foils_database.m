@@ -40,6 +40,9 @@ FoilProps.C1 = struct('chord',0.054,'thickness',0.054,'span',0.447,'mass',0.386,
 FoilProps.EC1 = struct('chord',0.0594,'thickness',0.0238,'span',0.401,'mass',0.302,'shape','Elliptical cylinder','material','PLA');% Joel's elliptical cylinder
 FoilProps.V1 = struct('chord',0.0535,'thickness',0.0265,'span',0.401,'mass',0.306,'shape','VibrissaBeem50x','material','PLA');% Joel's vibrissae model
 FoilProps.C2 = struct('chord',0.0538,'thickness',0.0538,'span',0.400,'mass',0.598,'shape','Cylindrical','material','ABS');% Joel's cylinder Xometry
+FoilProps.NACA0015 = struct('chord',0.1185,'thickness',0.0184,'span',0.400,'mass',0.598,'shape','NACA0015','material','ABS');% Joel's NACA Xometry
+FoilProps.EC2 = struct('chord',0.054,'thickness',0.0265,'span',0.400,'mass',0.490,'shape','Elliptical cylinder','material','ABS');% Joel's elliptical cylinder Xometry
+FoilProps.V2 = struct('chord',0.0535,'thickness',0.0266,'span',0.400,'mass',0.488,'shape','VibrissaBeem50x','material','ABS');% Joel's vibrissa Xometry
 FoilProps.None = 'No 2nd foil';
 
 foils.foilW = FoilProps.(foilType1);
